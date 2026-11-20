@@ -1,0 +1,65 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { getProfileEmailRecipient, sendBrevoEmail } from "@/lib/brevo";
+
+type Props = { params: Promise<{ id: string }> };
+
+export async function POST(request: Request, { params }: Props) {
+  const { id } = await params;
+  const body = await request.json() as { action?: unknown; rsvpId?: unknown };
+  const action = body.action === "mark-sent" || body.action === "confirm" || body.action === "refund" ? body.action : null;
+  if (!action || typeof body.rsvpId !== "string") {
+    return NextResponse.json({ error: "Invalid payment action." }, { status: 400 });
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "You must be logged in." }, { status: 401 });
+
+  const { data: rsvp, error: rsvpError } = await supabase
+    .from("rsvps")
+    .select("id, user_id, payment_status, event_id, events(organizer_id, title, price_cad, etransfer_email, payment_deadline)")
+    .eq("id", body.rsvpId)
+    .eq("event_id", id)
+    .single();
+  if (rsvpError || !rsvp) return NextResponse.json({ error: "RSVP not found." }, { status: 404 });
+
+  const eventInfo = Array.isArray(rsvp.events) ? rsvp.events[0] : rsvp.events;
+  const organizerId = eventInfo?.organizer_id;
+  const nextStatus = action === "mark-sent" ? "pending" : action === "refund" ? "refunded" : "paid";
+  const allowed = action === "mark-sent"
+    ? rsvp.user_id === user.id && rsvp.user_id !== organizerId && rsvp.payment_status === "unpaid"
+    : action === "refund"
+      ? organizerId === user.id && rsvp.user_id !== user.id && ["paid", "cancel_requested"].includes(rsvp.payment_status)
+      : organizerId === user.id && rsvp.user_id !== user.id && ["unpaid", "pending"].includes(rsvp.payment_status);
+
+  if (!allowed) return NextResponse.json({ error: "You are not allowed to perform this payment action." }, { status: 403 });
+
+  const paymentUpdate = action === "confirm"
+    ? { payment_status: nextStatus, paid_at: new Date().toISOString() }
+    : action === "refund"
+      ? { payment_status: nextStatus, paid_at: null }
+      : { payment_status: nextStatus };
+  const { error } = await supabase.from("rsvps").update(paymentUpdate).eq("id", rsvp.id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (action === "mark-sent") {
+    const organizer = await getProfileEmailRecipient(organizerId);
+    const attendee = await supabase.from("profiles").select("display_name").eq("id", rsvp.user_id).maybeSingle();
+    const eventTitle = eventInfo?.title || "NATEA event";
+    const deadline = eventInfo?.payment_deadline
+      ? new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short" }).format(new Date(eventInfo.payment_deadline))
+      : "the event deadline";
+    if (organizer) {
+      try {
+        await sendBrevoEmail(
+          `Payment reported for ${eventTitle}`,
+          [organizer],
+          `<p>${attendee.data?.display_name || "An attendee"} reported a payment of <strong>$${eventInfo?.price_cad ?? 0} CAD</strong> for <strong>${eventTitle}</strong>.</p><p>Please review and confirm the e-Transfer before the deadline of <strong>${deadline}</strong>.</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/en/my-events">Review payment confirmations</a></p>`,
+        );
+      } catch (emailError) {
+        console.error("Payment confirmation email failed.", emailError);
+      }
+    }
+  }
+  return NextResponse.json({ ok: true, paymentStatus: nextStatus });
+}

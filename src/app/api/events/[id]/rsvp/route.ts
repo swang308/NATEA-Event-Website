@@ -1,0 +1,116 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+type Props = { params: Promise<{ id: string }> };
+
+export async function POST(request: Request, { params }: Props) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return NextResponse.json({ error: "You must be logged in to RSVP." }, { status: 401 });
+
+  const body = await request.json().catch(() => ({})) as { plus_ones?: number; plus_one_name?: string | null };
+  const plusOnes = body.plus_ones === 1 ? 1 : 0;
+  const plusOneName = typeof body.plus_one_name === "string" ? body.plus_one_name.trim() || null : null;
+
+  const { data: event, error: eventError } = await supabase
+    .from("events")
+    .select("id, price_cad, status, starts_at, capacity")
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
+  if (eventError || !event || new Date(event.starts_at) <= new Date()) {
+    return NextResponse.json({ error: "This event is not available for RSVP." }, { status: 400 });
+  }
+
+  const { data: existingRsvps } = await supabase
+    .from("rsvps")
+    .select("plus_ones, payment_status")
+    .eq("event_id", id)
+    .neq("payment_status", "refunded");
+  const currentCount = (existingRsvps ?? []).reduce(
+    (sum, row) => sum + 1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0),
+    0
+  );
+  if (currentCount + 1 + plusOnes > event.capacity) {
+    return NextResponse.json({ error: "This event is full." }, { status: 400 });
+  }
+
+
+  const { error } = await supabase.from("rsvps").upsert({
+    event_id: event.id,
+    user_id: user.id,
+    payment_status: event.price_cad === 0 ? "free" : "unpaid",
+    plus_ones: plusOnes,
+    plus_one_name: plusOneName,
+    paid_at: null,
+  }, { onConflict: "event_id,user_id" });
+
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ ok: true }, { status: 201 });
+}
+
+export async function PATCH(request: Request, { params }: Props) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return NextResponse.json({ error: "You must be logged in to cancel an RSVP." }, { status: 401 });
+
+  const body = await request.json().catch(() => ({})) as { action?: string; plus_one_name?: string | null };
+  if (body.action !== "request-cancel" && body.action !== "update-guest") {
+    return NextResponse.json({ error: "Unknown action." }, { status: 400 });
+  }
+
+  const { data: rsvp, error: rsvpError } = await supabase
+    .from("rsvps")
+    .select("payment_status, plus_ones")
+    .eq("event_id", id)
+    .eq("user_id", user.id)
+    .single();
+  if (rsvpError || !rsvp) return NextResponse.json({ error: "RSVP not found." }, { status: 404 });
+
+  // Edit guest name — no cancel, no payment change
+  if (body.action === "update-guest") {
+    if (rsvp.plus_ones !== 1) return NextResponse.json({ error: "No guest on this RSVP." }, { status: 400 });
+    if (rsvp.payment_status === "refunded") return NextResponse.json({ error: "This RSVP was refunded." }, { status: 400 });
+    const guestName = typeof body.plus_one_name === "string" ? body.plus_one_name.trim() || null : null;
+    const { error } = await supabase
+      .from("rsvps")
+      .update({ plus_one_name: guestName })
+      .eq("event_id", id)
+      .eq("user_id", user.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true });
+  }
+
+  // Paid / pending: don't delete — mark as cancel requested, host confirms + refunds
+  if (rsvp.payment_status === "paid" || rsvp.payment_status === "pending") {
+    const { error } = await supabase
+      .from("rsvps")
+      .update({ payment_status: "cancel_requested" })
+      .eq("event_id", id)
+      .eq("user_id", user.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true, requested: true });
+  }
+
+  // Free / unpaid: delete immediately
+  const { error } = await supabase.from("rsvps").delete().eq("event_id", id).eq("user_id", user.id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE(_request: Request, { params }: Props) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return NextResponse.json({ error: "You must be logged in to cancel an RSVP." }, { status: 401 });
+
+  const { error } = await supabase.from("rsvps").delete().eq("event_id", id).eq("user_id", user.id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ ok: true });
+}

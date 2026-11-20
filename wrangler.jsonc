@@ -1,7 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"main": ".open-next/worker.js",
-	"name": "natea",
+	"name": "natea-event-website",
 	"compatibility_date": "2026-11-20",
 	"compatibility_flags": [
 		"nodejs_compat",

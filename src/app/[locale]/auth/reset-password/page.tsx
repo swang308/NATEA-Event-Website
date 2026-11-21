@@ -14,7 +14,7 @@ export default async function ResetPasswordPage({ params }: Props) {
     <main className="mx-auto max-w-md px-4 py-16">
       <h1 className="text-3xl font-extrabold">{t("title")}</h1>
       <p className="mt-2 text-muted">{t("description")}</p>
-      <ResetPasswordForm locale={locale} labels={t.raw() as any} />
+      <ResetPasswordForm locale={locale} labels={{ password: t("password"), confirmPassword: t("confirmPassword"), submit: t("submit"), saving: t("saving"), mismatch: t("mismatch"), success: t("success"), invalidLink: t("invalidLink"), backToLogin: t("backToLogin") }} />
     </main>
   );
 }

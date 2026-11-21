@@ -14,7 +14,7 @@ export default async function ForgotPasswordPage({ params }: Props) {
     <main className="mx-auto max-w-md px-4 py-16">
       <h1 className="text-3xl font-extrabold">{t("title")}</h1>
       <p className="mt-2 text-muted">{t("description")}</p>
-      <ForgotPasswordForm locale={locale} labels={t.raw() as any} />
+      <ForgotPasswordForm locale={locale} labels={{ email: t("email"), submit: t("submit"), sending: t("sending"), sent: t("sent"), backToLogin: t("backToLogin") }} />
     </main>
   );
 }

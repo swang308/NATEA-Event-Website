@@ -57,13 +57,6 @@ export default async function EventDetailPage({ params }: Props) {
   return (
     <main className="min-h-screen bg-bg2 py-10">
       <div className="container">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
-            <span className="display text-xl font-extrabold tracking-tight">NATEA</span>
-          </Link>
-          <Link href="/events" className="font-bold text-purple">← {t("back")}</Link>
-        </div>
         <article className="mt-8 overflow-hidden rounded-2xl border border-line bg-card shadow-sm">
           <div className="gradient-mix p-8 text-white md:p-12">
             <p className="text-sm font-bold uppercase tracking-[.18em]">{event.category}</p>
@@ -142,7 +135,7 @@ export default async function EventDetailPage({ params }: Props) {
               )}
               <section className="mt-12">
                 <h2 className="display text-2xl font-extrabold">{t("whoIsComing")}</h2>
-                <div className="mt-4 max-h-48 overflow-y-auto divide-y divide-line rounded-2xl border border-line bg-card">
+                <div className="mt-4 max-h-96 overflow-y-auto divide-y divide-line rounded-2xl border border-line bg-card">
                   {(attendees ?? []).map((attendee) => <div key={attendee.display_name} className="flex items-center justify-between gap-3 px-4 py-3"><div className="flex items-center gap-3">{attendee.avatar_url ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={attendee.avatar_url} alt={attendee.display_name} className="h-9 w-9 rounded-full object-cover" />

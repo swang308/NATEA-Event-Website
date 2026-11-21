@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getProfileEmailRecipient, sendBrevoEmail } from "@/lib/brevo";
 import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail } from "@/lib/brevo";
 
 type Props = { params: Promise<{ id: string }> };

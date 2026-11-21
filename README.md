@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NATEA — Toronto IT Community
 
-## Getting Started
+A bilingual (English / 繁體中文) community website for Taiwanese in Toronto who love tech — whether you work in IT or are just starting to learn it.
 
-First, run the development server:
+**Live site:** https://natea-event-website.vercel.app
+
+## What it does
+
+- Browse and search community events, see who's going
+- RSVP, with plus-ones (0 or 1 guest per RSVP)
+- Pay by Interac e-Transfer directly to the event host — RSVP → "I've sent it" → host confirms → Paid
+- Host an event (admin approval required before it goes public)
+- Sign up / log in with email or Google, My Events, profile with avatar (photo or emoji)
+- Online events with a meeting link shown only after RSVP
+- Transactional emails via Brevo (RSVP confirmation, payment reported / confirmed, password reset via 8-digit code)
+
+## Tech stack
+
+- Next.js (App Router) + TypeScript + Tailwind CSS
+- Supabase (Postgres + Auth + Storage, Row Level Security)
+- Brevo (transactional email + custom SMTP for Supabase Auth emails)
+- next-intl (`en` / `zh-TW` locales)
+- Deployed on Vercel
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

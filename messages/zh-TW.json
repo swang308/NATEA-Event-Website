@@ -415,6 +415,10 @@
     "perPerson": "每人",
     "rsvpTotal": "你 + 同行者總計：{amount}",
     "paidTotal": "已付款：{amount}",
+    "payByCard": "用信用卡付款",
+    "payByCardWorking": "正在前往安全結帳…",
+    "payByCardError": "無法開始信用卡付款，請再試一次或改用 e-Transfer。",
+    "orPayByEtransfer": "或改用下面的 e-Transfer 付款",
     "statuses": {
       "paid": "已付款",
       "pending": "等待確認",

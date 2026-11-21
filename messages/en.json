@@ -415,6 +415,10 @@
     "perPerson": "per person",
     "rsvpTotal": "Total for you + guest: {amount}",
     "paidTotal": "Paid: {amount}",
+    "payByCard": "Pay by card",
+    "payByCardWorking": "Redirecting to secure checkout…",
+    "payByCardError": "Could not start card payment. Please try again or pay by e-Transfer.",
+    "orPayByEtransfer": "or pay by e-Transfer below",
     "statuses": {
       "paid": "Paid",
       "pending": "Pending",

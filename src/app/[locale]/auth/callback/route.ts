@@ -7,6 +7,7 @@ export async function GET(request: Props["request"]) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const locale = url.pathname.split("/")[1] || "en";
+  const next = url.searchParams.get("next");
 
   if (!code) {
     return NextResponse.redirect(new URL(`/${locale}/login?error=oauth_callback`, url.origin));
@@ -19,5 +20,6 @@ export async function GET(request: Props["request"]) {
     return NextResponse.redirect(new URL(`/${locale}/login?error=oauth_callback`, url.origin));
   }
 
-  return NextResponse.redirect(new URL(`/${locale}`, url.origin));
+  const redirectTo = next && next.startsWith("/") && !next.startsWith("//") ? next : `/${locale}`;
+  return NextResponse.redirect(new URL(redirectTo, url.origin));
 }

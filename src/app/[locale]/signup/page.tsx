@@ -21,7 +21,6 @@ export default async function SignupPage({ params }: Props) {
         <h1 className="display mt-8 text-4xl font-extrabold">{t("title")}</h1>
         <p className="mt-4 leading-7 text-muted">{t("description")}</p>
         <AuthForm mode="signup" locale={locale} labels={t.raw("form") as AuthFormLabels} />
-        <Link href="/" className="mt-6 inline-flex font-bold text-purple">{t("back")}</Link>
       </section>
     </main>
   );

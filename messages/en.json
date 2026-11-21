@@ -68,6 +68,27 @@
     }
   },
   "Routes": {
+    "forgotPassword": {
+      "title": "Forgot password?",
+      "description": "Enter your email and we'll send you a link to reset your password.",
+      "email": "Email",
+      "submit": "Send reset link",
+      "sending": "Sending…",
+      "sent": "Check your email — we've sent you a password reset link.",
+      "backToLogin": "Back to log in"
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "description": "Enter your new password below.",
+      "password": "New password",
+      "confirmPassword": "Confirm new password",
+      "submit": "Save new password",
+      "saving": "Saving…",
+      "mismatch": "Passwords don't match.",
+      "success": "Your password has been reset. You can now log in.",
+      "invalidLink": "This reset link is invalid or has expired. Please request a new one.",
+      "backToLogin": "Back to log in"
+    },
     "login": {
       "title": "Log in",
       "description": "Log in to manage your RSVPs and hosted events.",

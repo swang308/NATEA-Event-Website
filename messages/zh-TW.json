@@ -68,6 +68,27 @@
     }
   },
   "Routes": {
+    "forgotPassword": {
+      "title": "忘記密碼？",
+      "description": "輸入你的 Email，我們會寄一封重設密碼的連結給你。",
+      "email": "Email",
+      "submit": "寄出重設連結",
+      "sending": "寄送中…",
+      "sent": "請查看你的 Email，我們已寄出重設密碼的連結。",
+      "backToLogin": "回登入頁面"
+    },
+    "resetPassword": {
+      "title": "設定新密碼",
+      "description": "請在下方輸入你的新密碼。",
+      "password": "新密碼",
+      "confirmPassword": "確認新密碼",
+      "submit": "儲存新密碼",
+      "saving": "儲存中…",
+      "mismatch": "兩次輸入的密碼不一致。",
+      "success": "密碼已重設，你現在可以登入了。",
+      "invalidLink": "這個重設連結無效或已過期，請重新申請。",
+      "backToLogin": "回登入頁面"
+    },
     "login": {
       "title": "登入",
       "description": "登入以管理你的 RSVP 和主辦活動。",

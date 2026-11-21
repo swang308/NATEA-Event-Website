@@ -21,7 +21,10 @@ export default async function LoginPage({ params }: Props) {
         <h1 className="display mt-8 text-4xl font-extrabold">{t("title")}</h1>
         <p className="mt-4 leading-7 text-muted">{t("description")}</p>
         <AuthForm mode="login" locale={locale} labels={t.raw("form") as AuthFormLabels} />
-        <Link href="/" className="mt-6 inline-flex font-bold text-purple">{t("back")}</Link>
+        <div className="mt-6 flex items-center justify-between">
+          <Link href="/forgot-password" className="font-bold text-teal-d">{locale === "zh-TW" ? "忘記密碼？" : "Forgot password?"}</Link>
+          <Link href="/" className="font-bold text-purple">{t("back")}</Link>
+        </div>
       </section>
     </main>
   );

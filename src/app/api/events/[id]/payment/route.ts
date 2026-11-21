@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getProfileEmailRecipient, sendBrevoEmail } from "@/lib/brevo";
+import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail } from "@/lib/brevo";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -18,7 +19,7 @@ export async function POST(request: Request, { params }: Props) {
 
   const { data: rsvp, error: rsvpError } = await supabase
     .from("rsvps")
-    .select("id, user_id, payment_status, event_id, events(organizer_id, title, price_cad, etransfer_email, payment_deadline)")
+    .select("id, user_id, payment_status, plus_ones, plus_one_name, event_id, events(organizer_id, title, price_cad, starts_at, location, location_type, etransfer_email, payment_deadline)")
     .eq("id", body.rsvpId)
     .eq("event_id", id)
     .single();
@@ -61,5 +62,27 @@ export async function POST(request: Request, { params }: Props) {
       }
     }
   }
+  if (action === "confirm") {
+    try {
+      const recipient = await getProfileEmailRecipient(rsvp.user_id);
+      if (recipient) {
+        await sendPaymentConfirmedEmail({
+          toEmail: recipient.email,
+          toName: recipient.name ?? "there",
+          eventTitle: eventInfo?.title ?? "NATEA event",
+          eventDate: eventInfo?.starts_at
+            ? new Date(eventInfo.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" })
+            : "",
+          eventLocation: eventInfo?.location_type === "online" ? "Online" : (eventInfo?.location ?? ""),
+          eventUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/events/${id}`,
+          totalCents: (eventInfo?.price_cad ?? 0) * 100 * (1 + (rsvp.plus_ones ?? 0)),
+          guestName: rsvp.plus_ones > 0 ? rsvp.plus_one_name : null,
+        });
+      }
+    } catch (emailError) {
+      console.error("Payment confirmation email failed:", emailError);
+    }
+  }
+
   return NextResponse.json({ ok: true, paymentStatus: nextStatus });
 }

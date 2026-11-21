@@ -24,7 +24,7 @@ export function ForgotPasswordForm({ locale, labels }: { locale: string; labels:
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/auth/callback?next=/${locale}/auth/reset-password`,
       });
       if (resetError) throw resetError;
-      setSent(true);
+      window.location.assign(`/${locale}/auth/reset-password?email=${encodeURIComponent(email)}`);
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Something went wrong. Please try again.");
     } finally {

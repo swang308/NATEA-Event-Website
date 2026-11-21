@@ -10,31 +10,17 @@ type Labels = {
 };
 
 export function ResetPasswordForm({ locale, labels }: { locale: string; labels: Labels }) {
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [verifying, setVerifying] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    async function verify() {
-      const params = new URLSearchParams(window.location.search);
-      const tokenHash = params.get("token_hash");
-      if (!tokenHash) {
-        setError(labels.invalidLink);
-        setVerifying(false);
-        return;
-      }
-      const supabase = createClient();
-      const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
-      if (verifyError) {
-        setError(labels.invalidLink);
-      }
-      setVerifying(false);
-    }
-    verify();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const params = new URLSearchParams(window.location.search);
+    setEmail(params.get("email") ?? "");
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -47,6 +33,8 @@ export function ResetPasswordForm({ locale, labels }: { locale: string; labels: 
     setIsSubmitting(true);
     try {
       const supabase = createClient();
+      const { error: verifyError } = await supabase.auth.verifyOtp({ email, token: code.trim(), type: "recovery" });
+      if (verifyError) throw verifyError;
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
       setSuccess(true);
@@ -57,10 +45,6 @@ export function ResetPasswordForm({ locale, labels }: { locale: string; labels: 
     }
   }
 
-  if (verifying) {
-    return <p className="mt-6 text-sm text-muted">Loading…</p>;
-  }
-
   if (success) {
     return <p role="status" className="mt-6 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{labels.success}</p>;
   }
@@ -68,6 +52,14 @@ export function ResetPasswordForm({ locale, labels }: { locale: string; labels: 
   return (
     <>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <label className="block text-sm font-bold">
+          Email
+          <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-line px-4 py-3 font-normal outline-none focus:border-teal" />
+        </label>
+        <label className="block text-sm font-bold">
+          Reset code
+          <input required inputMode="numeric" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="123456" className="mt-2 w-full rounded-xl border border-line px-4 py-3 font-normal tracking-widest outline-none focus:border-teal" />
+        </label>
         <label className="block text-sm font-bold">
           {labels.password}
           <input required minLength={6} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 w-full rounded-xl border border-line px-4 py-3 font-normal outline-none focus:border-teal" />

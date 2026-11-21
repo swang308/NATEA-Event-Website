@@ -58,7 +58,7 @@ export function ResetPasswordForm({ locale, labels }: { locale: string; labels: 
         </label>
         <label className="block text-sm font-bold">
           Reset code
-          <input required inputMode="numeric" maxLength={8} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="123456" className="mt-2 w-full rounded-xl border border-line px-4 py-3 font-normal tracking-widest outline-none focus:border-teal" />
+          <input required inputMode="numeric" maxLength={8} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} placeholder="12345678" className="mt-2 w-full rounded-xl border border-line px-4 py-3 font-normal tracking-widest outline-none focus:border-teal" />
         </label>
         <label className="block text-sm font-bold">
           {labels.password}

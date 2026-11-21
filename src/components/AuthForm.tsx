@@ -53,6 +53,11 @@ export function AuthForm({ mode, locale, labels }: AuthFormProps) {
 
       if (result.error) throw result.error;
 
+      if (mode === "signup" && !result.data.session) {
+        setConfirmation(labels.confirmation);
+        return;
+      }
+
       if (mode === "signup") {
         window.location.assign(`/${locale}`);
       } else {

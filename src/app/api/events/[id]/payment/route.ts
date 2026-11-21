@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { stripe } from "@/lib/stripe";
 import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail, sendPaymentReportedEmail } from "@/lib/brevo";
 
 type Props = { params: Promise<{ id: string }> };
@@ -18,7 +19,7 @@ export async function POST(request: Request, { params }: Props) {
 
   const { data: rsvp, error: rsvpError } = await supabase
     .from("rsvps")
-    .select("id, user_id, payment_status, plus_ones, plus_one_name, event_id, events(organizer_id, title, price_cad, starts_at, location, location_type, etransfer_email, payment_deadline)")
+    .select("id, user_id, payment_status, plus_ones, plus_one_name, stripe_payment_intent_id, event_id, events(organizer_id, title, price_cad, starts_at, location, location_type, etransfer_email, payment_deadline)")
     .eq("id", body.rsvpId)
     .eq("event_id", id)
     .single();
@@ -42,6 +43,18 @@ export async function POST(request: Request, { params }: Props) {
       : { payment_status: nextStatus };
   const { error } = await supabase.from("rsvps").update(paymentUpdate).eq("id", rsvp.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  // If this was a Stripe card payment, refund the card too.
+  // If it was e-Transfer, stripe_payment_intent_id is null, so skip it.
+  if (action === "refund" && rsvp.stripe_payment_intent_id) {
+    try {
+      await stripe.refunds.create({
+        payment_intent: rsvp.stripe_payment_intent_id,
+      });
+    } catch (refundError) {
+      console.error("Stripe refund failed:", refundError);
+    }
+  }
+
   if (action === "mark-sent") {
     const organizer = await getProfileEmailRecipient(organizerId);
     const attendee = await supabase.from("profiles").select("display_name").eq("id", rsvp.user_id).maybeSingle();

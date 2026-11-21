@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -14,7 +14,28 @@ export function ResetPasswordForm({ locale, labels }: { locale: string; labels: 
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [verifying, setVerifying] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    async function verify() {
+      const params = new URLSearchParams(window.location.search);
+      const tokenHash = params.get("token_hash");
+      if (!tokenHash) {
+        setError(labels.invalidLink);
+        setVerifying(false);
+        return;
+      }
+      const supabase = createClient();
+      const { error: verifyError } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
+      if (verifyError) {
+        setError(labels.invalidLink);
+      }
+      setVerifying(false);
+    }
+    verify();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,6 +55,10 @@ export function ResetPasswordForm({ locale, labels }: { locale: string; labels: 
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (verifying) {
+    return <p className="mt-6 text-sm text-muted">Loading…</p>;
   }
 
   if (success) {

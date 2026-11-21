@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendRsvpConfirmationEmail } from "@/lib/brevo";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -55,11 +56,16 @@ export async function POST(request: Request, { params }: Props) {
       .select("email, display_name")
       .eq("id", user.id)
       .maybeSingle();
-    const { data: organizerProfile } = await supabase
+    const adminClient = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: organizerProfile } = await adminClient
       .from("profiles")
       .select("email, etransfer_email")
       .eq("id", event.organizer_id)
       .maybeSingle();
+
     const attendeeEmail = attendeeProfile?.email ?? user.email ?? null;
     if (attendeeEmail) {
       await sendRsvpConfirmationEmail({

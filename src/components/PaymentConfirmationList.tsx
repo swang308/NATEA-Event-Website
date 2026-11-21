@@ -44,7 +44,7 @@ export function PaymentConfirmationList({ eventId, pendingPayments, confirmedTot
       <div className="mt-5 grid gap-3">
         {pendingPayments.length > 0 ? pendingPayments.map((payment) => (
           <div key={payment.rsvpId} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-card p-4">
-            <div><p className="font-bold">{payment.displayName}</p><div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted"><span>{payment.email}</span>{payment.email && <CopyButton value={payment.email} label={labels.copy} copiedLabel={labels.copied} />}</div><p className="mt-1 text-sm font-bold text-ink">${payment.amount} CAD</p>{payment.dateSent && <p className="mt-1 text-xs text-muted">{(labels.dateSent ?? "Sent on {date}").replace("{date}", new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(payment.dateSent)))}
+            <div><p className="font-bold">{payment.displayName}</p><div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted"><span>{payment.email}</span>{payment.email && <CopyButton value={payment.email} label={labels.copy} copiedLabel={labels.copied} />}</div><p className="mt-1 text-sm font-bold text-ink">${payment.amount} CAD</p>{payment.dateSent && <p className="mt-1 text-xs text-muted">{(labels.dateSent ?? "Sent on {date}").replace("{date}", new Intl.DateTimeFormat(undefined, { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(new Date(payment.dateSent)))}
 </p>}</div>
             <PaymentButton eventId={eventId} rsvpId={payment.rsvpId} action="confirm" label={labels.confirm} working={labels.working} error={labels.error} success={labels.updated} />
           </div>

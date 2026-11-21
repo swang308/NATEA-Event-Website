@@ -25,6 +25,7 @@ const colors = {
 
 export function EventCard({ event, locale, labels }: Props) {
   const date = new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", {
+    timeZone: "America/Toronto",
     month: "short",
     day: "numeric",
     weekday: "short",
@@ -32,9 +33,11 @@ export function EventCard({ event, locale, labels }: Props) {
     minute: "2-digit",
   }).format(new Date(event.starts_at));
   const dateParts = new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", {
+    timeZone: "America/Toronto",
     month: "short",
     day: "2-digit",
   }).formatToParts(new Date(event.starts_at));
+
   const day = dateParts.find((part) => part.type === "day")?.value;
   const month = dateParts.find((part) => part.type === "month")?.value.toUpperCase();
   const spots = event.capacity - event.attendee_count;

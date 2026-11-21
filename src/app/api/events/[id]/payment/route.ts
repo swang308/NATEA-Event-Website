@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail } from "@/lib/brevo";
+import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail, sendPaymentReportedEmail } from "@/lib/brevo";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -46,21 +46,29 @@ export async function POST(request: Request, { params }: Props) {
     const organizer = await getProfileEmailRecipient(organizerId);
     const attendee = await supabase.from("profiles").select("display_name").eq("id", rsvp.user_id).maybeSingle();
     const eventTitle = eventInfo?.title || "NATEA event";
-    const deadline = eventInfo?.payment_deadline
-      ? new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short" }).format(new Date(eventInfo.payment_deadline))
-      : "the event deadline";
     if (organizer) {
       try {
-        await sendBrevoEmail(
-          `Payment reported for ${eventTitle}`,
-          [organizer],
-          `<p>${attendee.data?.display_name || "An attendee"} reported a payment of <strong>$${eventInfo?.price_cad ?? 0} CAD</strong> for <strong>${eventTitle}</strong>.</p><p>Please review and confirm the e-Transfer before the deadline of <strong>${deadline}</strong>.</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/en/my-events">Review payment confirmations</a></p>`,
-        );
+        await sendPaymentReportedEmail({
+          toEmail: organizer.email,
+          toName: organizer.name ?? "there",
+          attendeeName: attendee.data?.display_name || "An attendee",
+          eventTitle,
+          eventDate: eventInfo?.starts_at
+            ? new Date(eventInfo.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" })
+            : "",
+          totalCents: (eventInfo?.price_cad ?? 0) * 100 * (1 + (rsvp.plus_ones ?? 0)),
+          guestName: rsvp.plus_ones > 0 ? rsvp.plus_one_name : null,
+          deadline: eventInfo?.payment_deadline
+            ? new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(new Date(eventInfo.payment_deadline))
+            : "the event deadline",
+          reviewUrl: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/en/my-events`,
+        });
       } catch (emailError) {
         console.error("Payment confirmation email failed.", emailError);
       }
     }
   }
+
   if (action === "confirm") {
     try {
       const recipient = await getProfileEmailRecipient(rsvp.user_id);

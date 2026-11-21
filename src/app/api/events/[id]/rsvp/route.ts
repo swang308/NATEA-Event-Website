@@ -57,7 +57,7 @@ export async function POST(request: Request, { params }: Props) {
       .maybeSingle();
     const { data: organizerProfile } = await supabase
       .from("profiles")
-      .select("etransfer_email")
+      .select("email, etransfer_email")
       .eq("id", event.organizer_id)
       .maybeSingle();
     const attendeeEmail = attendeeProfile?.email ?? user.email ?? null;
@@ -71,7 +71,8 @@ export async function POST(request: Request, { params }: Props) {
         eventUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/events/${event.id}`,
         totalCents: event.price_cad * 100 * (1 + plusOnes),
         guestName: plusOnes > 0 ? plusOneName : null,
-        etransferEmail: organizerProfile?.etransfer_email ?? null,
+        etransferEmail: organizerProfile?.etransfer_email ?? organizerProfile?.email ?? null,
+
       });
     }
   } catch (emailError) {

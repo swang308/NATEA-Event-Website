@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
+export const instant = false;
+
 export default function ForgotPasswordPage() {
   const t = useTranslations("Routes.forgotPassword");
   const params = useParams();

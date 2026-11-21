@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
+export const instant = false;
+
 export default function ResetPasswordPage() {
   const t = useTranslations("Routes.resetPassword");
   const [password, setPassword] = useState("");

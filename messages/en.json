@@ -244,7 +244,8 @@
           "Workshop": "Workshop",
           "Panel": "Panel",
           "Social": "Social",
-          "Study Group": "Study Group"
+          "Study Group": "Study Group",
+          "endDate": "End date & time"
         },
         "date": "Date and time",
         "location": "Location",
@@ -331,7 +332,8 @@
           "Workshop": "Workshop",
           "Panel": "Panel",
           "Social": "Social",
-          "Study Group": "Study Group"
+          "Study Group": "Study Group",
+          "endDate": "End date & time"
         },
         "date": "Date and time",
         "location": "Location",
@@ -419,6 +421,7 @@
     "payByCardWorking": "Redirecting to secure checkout…",
     "payByCardError": "Could not start card payment. Please try again or pay by e-Transfer.",
     "orPayByEtransfer": "or pay by e-Transfer below",
+    "downloadIcs": "Download .ics file",
     "statuses": {
       "paid": "Paid",
       "pending": "Pending",

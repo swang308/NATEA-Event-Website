@@ -49,9 +49,31 @@ export default async function EventDetailPage({ params }: Props) {
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   const eventStart = new Date(event.starts_at);
   const paymentDeadline = event.payment_deadline ? new Date(event.payment_deadline) : null;
+  const eventEnd = event.ends_at ? new Date(event.ends_at) : new Date(eventStart.getTime() + 2 * 60 * 60 * 1000);
   const calendarStart = eventStart.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const calendarEnd = new Date(eventStart.getTime() + 2 * 60 * 60 * 1000).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const calendarEnd = eventEnd.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  const endTime = new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", {
+    timeZone: "America/Toronto",
+    timeStyle: "short",
+  }).format(eventEnd);
   const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${calendarStart}/${calendarEnd}&location=${encodeURIComponent(event.location_type === "online" ? (event.meeting_url || "Online") : event.location)}&details=${encodeURIComponent(event.description)}`;
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//NATEA//EN",
+    "BEGIN:VEVENT",
+    `UID:${id}@natea-event-website.vercel.app`,
+    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`,
+    `DTSTART:${calendarStart}`,
+    `DTEND:${calendarEnd}`,
+    `SUMMARY:${event.title}`,
+    `DESCRIPTION:${event.description.replace(/\r?\n/g, "\\n")}`,
+    `LOCATION:${event.location_type === "online" ? (event.meeting_url || "Online") : event.location}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const icsUrl = `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`;
+
   const eventUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${locale}/events/${id}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(eventUrl)}`;
 
@@ -93,7 +115,8 @@ export default async function EventDetailPage({ params }: Props) {
               {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "pending" && <p role="status" className="mt-6 border-t border-line pt-5 text-sm font-bold text-green-800">{t("payment.sentConfirmation")}</p>}
               <div className="mt-6 rounded-2xl border border-line bg-bg2 p-5">
                 <h3 className="display text-lg font-extrabold">{t("date")}</h3>
-                <p className="mt-1 text-muted">{date}</p>
+                <p className="mt-1 text-muted">{date} – {endTime}</p>
+
 
                 <h3 className="display mt-4 text-lg font-extrabold">{t("location")}</h3>
                 {event.location_type === "online" ? (
@@ -162,7 +185,7 @@ export default async function EventDetailPage({ params }: Props) {
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("organizer")}</h2><p className="mt-3 font-bold">{organizer?.display_name || t("organizerFallback")}</p>{event.price_cad > 0 && event.etransfer_email && <div className="mt-3 flex items-start gap-2 text-sm"><span className="min-w-0 break-all leading-5 text-muted">{event.etransfer_email}</span><CopyButton value={event.etransfer_email} label={t("copy")} copiedLabel={t("copied")} /></div>}<p className="mt-3 text-xs leading-5 text-muted">{t("organizerNote")}</p></section>
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("discuss")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("lineButton") === "Open Line" ? "Chat with other attendees in the NATEA Line group." : "在 NATEA Line 群組和其他參加者聊天。"}</p><a href="https://line.me/ti/g/M8agqVHJnT" target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center whitespace-nowrap rounded-full border border-teal bg-white px-5 py-3 text-sm font-bold text-teal-d">{t("lineButton")}</a>
             </section>
-            <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("calendar")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("addToCalendar") === "Add to Google Calendar" ? "Save the date so you don't miss it." : "把活動加入行事曆，不要錯過。"}</p><a href={calendarUrl} target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center whitespace-nowrap rounded-full bg-purple px-5 py-3 text-sm font-bold text-white" style={{ color: "#fff" }}>{t("addToCalendar")}</a>
+            <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("calendar")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("addToCalendar") === "Add to Google Calendar" ? "Save the date so you don't miss it." : "把活動加入行事曆，不要錯過。"}</p><a href={icsUrl} download={`${event.title}.ics`} className="mt-3 inline-flex w-full justify-center whitespace-nowrap rounded-full border border-purple bg-white px-5 py-3 text-sm font-bold text-purple">{t("downloadIcs")}</a>
             </section>
             <section className="rounded-2xl border border-line bg-bg2 p-6 text-center"><h2 className="display text-xl font-extrabold">{t("share")}</h2><p className="mt-3 text-sm text-muted">{t("shareScan")}</p>
               <div className="mx-auto mt-4 inline-block rounded-xl bg-white p-2 shadow-sm">

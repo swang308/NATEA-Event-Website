@@ -9,6 +9,7 @@ export type PublicEvent = {
   what_to_bring: string | null;
   agenda: string[];
   starts_at: string;
+  ends_at: string;
   location: string;
   location_type: "in_person" | "online";
   meeting_url: string | null;
@@ -26,7 +27,7 @@ export async function getPublishedEvents(): Promise<PublicEvent[]> {
   const supabase = await createClient();
   const { data: events, error } = await supabase
     .from("events")
-    .select("id, title, category, description, included_text, what_to_bring, agenda, starts_at, location, location_type, meeting_url, price_cad, capacity, etransfer_email, payment_deadline, image_url, organizer_id, created_at")
+    .select("id, title, category, description, included_text, what_to_bring, agenda, starts_at, ends_at, location, location_type, meeting_url, price_cad, capacity, etransfer_email, payment_deadline, image_url, organizer_id, created_at")
     .eq("status", "published")
     .order("starts_at", { ascending: true });
 

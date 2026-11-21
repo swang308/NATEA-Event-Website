@@ -20,7 +20,8 @@ export default async function EditEventPage({ params }: Props) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/${locale}/login`);
   const [{ data: event }, { data: profile }] = await Promise.all([
-    supabase.from("events").select("id, title, category, starts_at, location, location_type, meeting_url, price_cad, capacity, etransfer_email, payment_deadline, description, agenda, status, image_url, organizer_id, included_text, what_to_bring").eq("id", id).maybeSingle(),
+    supabase.from("events").select("id, title, category, starts_at, ends_at, location, location_type, meeting_url, price_cad, capacity, etransfer_email, payment_deadline, description, agenda, status, image_url, organizer_id, included_text, what_to_bring")
+      .eq("id", id).maybeSingle(),
     supabase.from("profiles").select("role").eq("id", user.id).single(),
   ]);
   if (!event) {
@@ -41,11 +42,19 @@ export default async function EditEventPage({ params }: Props) {
 
   const localStart = new Date(event.starts_at);
   const startsAt = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  const localEnd = event.ends_at
+    ? new Date(event.ends_at)
+    : new Date(new Date(event.starts_at).getTime() + 2 * 60 * 60 * 1000);
+  const endsAt = new Date(localEnd.getTime() - localEnd.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+
   const paymentDeadline = event.payment_deadline ? new Date(event.payment_deadline) : null;
   const localDeadline = paymentDeadline ? new Date(paymentDeadline.getTime() - paymentDeadline.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : null;
   return <main className="min-h-screen bg-bg2 py-10"><section className="mx-auto w-full max-w-2xl rounded-2xl border border-line bg-card p-8 md:p-12"><Link href="/" className="flex items-center gap-3">
     <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
     <span className="display text-xl font-extrabold tracking-tight">NATEA</span>
   </Link>
-    <h1 className="display mt-8 text-4xl font-extrabold">{t("title")}</h1><p className="mt-4 text-muted">{t("description")}</p><EventForm eventId={id} initial={{ title: event.title, category: event.category, startsAt, location: event.location, locationType: event.location_type ?? "in_person", meetingUrl: event.meeting_url ?? null, priceCad: event.price_cad, capacity: event.capacity, etransferEmail: event.etransfer_email, paymentDeadline: localDeadline, description: event.description, includedText: event.included_text ?? null, whatToBring: event.what_to_bring ?? null, agenda: event.agenda, status: event.status, imageUrl: event.image_url }} labels={t.raw("form") as never} canPublish={isAdmin} /><div className="mt-10 flex flex-wrap gap-3 border-t border-line pt-6">{event.status === "published" && event.organizer_id === user.id && <CancelEventButton eventId={id} label={t("cancel")} confirmation={t("cancelConfirmation")} working={t("cancelWorking")} error={t("cancelError")} />}<DeleteEventButton eventId={id} label={t("delete")} confirmation={t("deleteConfirmation")} working={t("deleteWorking")} error={t("deleteError")} /></div></section></main>;
+    <h1 className="display mt-8 text-4xl font-extrabold">{t("title")}</h1><p className="mt-4 text-muted">{t("description")}</p><EventForm eventId={id} initial={{
+      title: event.title, category: event.category, startsAt, endsAt, location: event.location,
+      locationType: event.location_type ?? "in_person", meetingUrl: event.meeting_url ?? null, priceCad: event.price_cad, capacity: event.capacity, etransferEmail: event.etransfer_email, paymentDeadline: localDeadline, description: event.description, includedText: event.included_text ?? null, whatToBring: event.what_to_bring ?? null, agenda: event.agenda, status: event.status, imageUrl: event.image_url
+    }} labels={t.raw("form") as never} canPublish={isAdmin} /><div className="mt-10 flex flex-wrap gap-3 border-t border-line pt-6">{event.status === "published" && event.organizer_id === user.id && <CancelEventButton eventId={id} label={t("cancel")} confirmation={t("cancelConfirmation")} working={t("cancelWorking")} error={t("cancelError")} />}<DeleteEventButton eventId={id} label={t("delete")} confirmation={t("deleteConfirmation")} working={t("deleteWorking")} error={t("deleteError")} /></div></section></main>;
 }

@@ -8,7 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 type Props = {
   eventId?: string;
   initial?: {
-    title: string; category: string; startsAt: string; location: string; locationType: "in_person" | "online"; meetingUrl: string | null; priceCad: number;
+    title: string; category: string; startsAt: string; endsAt: string; location: string;
+    locationType: "in_person" | "online"; meetingUrl: string | null; priceCad: number;
     capacity: number; etransferEmail: string | null; paymentDeadline: string | null; description: string; agenda: string[]; status: "draft" | "pending" | "published" | "rejected"; imageUrl: string | null; includedText: string | null; whatToBring: string | null;
   };
   labels: {
@@ -16,6 +17,7 @@ type Props = {
     category: string;
     categories: Record<string, string>;
     date: string;
+    endDate: string;
     location: string;
     locationType: string;
     inPerson: string;
@@ -84,6 +86,10 @@ export function EventForm({ labels, eventId, initial, canPublish = false }: Prop
 
     try {
       const startsAt = String(form.get("startsAt") || "");
+      const endsAtRaw = String(form.get("endsAt") || "");
+      const endsAt = endsAtRaw
+        ? new Date(endsAtRaw).toISOString()
+        : new Date(new Date(startsAt).getTime() + 2 * 60 * 60 * 1000).toISOString();
       const submittedPaymentDeadline = priceCad === "0" ? null : paymentDeadline ? new Date(paymentDeadline).toISOString() : defaultDeadline(startsAt) ? new Date(defaultDeadline(startsAt)).toISOString() : null;
       const image = form.get("image");
       let imageUrl = initial?.imageUrl ?? null;
@@ -105,6 +111,7 @@ export function EventForm({ labels, eventId, initial, canPublish = false }: Prop
           title: form.get("title"),
           category: form.get("category"),
           startsAt: new Date(startsAt).toISOString(),
+          endsAt,
           location: locationType === "online" ? "Online" : form.get("location"),
           locationType,
           meetingUrl: locationType === "online" ? form.get("meetingUrl") : null,
@@ -140,6 +147,7 @@ export function EventForm({ labels, eventId, initial, canPublish = false }: Prop
       <label className="block text-sm font-bold">{labels.title}<input name="title" required maxLength={200} defaultValue={initial?.title} className={fieldClass} /></label>
       <label className="block text-sm font-bold">{labels.category}<select name="category" required defaultValue={initial?.category ?? "Workshop"} className={`${fieldClass} bg-white`}><option value="Workshop">{labels.categories.Workshop}</option><option value="Panel">{labels.categories.Panel}</option><option value="Social">{labels.categories.Social}</option><option value="Study Group">{labels.categories["Study Group"]}</option></select></label>
       <label className="block text-sm font-bold">{labels.date}<input name="startsAt" required type="datetime-local" defaultValue={initial?.startsAt} onChange={(event) => { if (!deadlineTouched && priceCad !== "0") setPaymentDeadline(defaultDeadline(event.target.value)); }} className={fieldClass} /></label>
+      <label className="block text-sm font-bold">{labels.endDate}<input name="endsAt" type="datetime-local" defaultValue={initial?.endsAt} className={fieldClass} /></label>
       <fieldset><legend className="text-sm font-bold">{labels.locationType}</legend><div className="mt-2 flex flex-wrap gap-5"><label className="flex items-center gap-2"><input type="radio" name="locationType" checked={locationType === "in_person"} onChange={() => setLocationType("in_person")} />{labels.inPerson}</label><label className="flex items-center gap-2"><input type="radio" name="locationType" checked={locationType === "online"} onChange={() => setLocationType("online")} />{labels.online}</label></div></fieldset>
       {locationType === "in_person" ? (
         <LocationInput name="location" label={labels.location} placeholder={labels.locationPlaceholder} mapLabel={labels.viewMap} initialValue={initial?.location} />

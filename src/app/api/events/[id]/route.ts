@@ -48,11 +48,17 @@ export async function PATCH(request: Request, { params }: Props) {
   if (status === "rejected") return NextResponse.json({ error: "Use the admin review endpoint for this action." }, { status: 403 });
   const paymentDeadline = priceCad > 0 ? paymentDeadlineInput ?? new Date(startsAt.getTime() - 24 * 60 * 60 * 1000) : null;
   if (paymentDeadline && (Number.isNaN(paymentDeadline.getTime()) || paymentDeadline > startsAt)) return NextResponse.json({ error: "The payment deadline must be before the event starts." }, { status: 400 });
+  const endsAtInput = typeof input.endsAt === "string" && input.endsAt ? new Date(input.endsAt) : null;
+  const endDate = endsAtInput && !Number.isNaN(endsAtInput.getTime())
+    ? endsAtInput
+    : new Date(startsAt.getTime() + 2 * 60 * 60 * 1000);
+  if (endDate <= startsAt) return NextResponse.json({ error: "The end time must be after the start time." }, { status: 400 });
 
   const { data, error } = await supabase.from("events").update({
     title,
     category: input.category,
     starts_at: startsAt.toISOString(),
+    ends_at: endDate.toISOString(),
     location,
     location_type: locationType,
     meeting_url: meetingUrl || null,

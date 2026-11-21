@@ -244,7 +244,8 @@
           "Workshop": "工作坊",
           "Panel": "座談會",
           "Social": "社交活動",
-          "Study Group": "讀書會"
+          "Study Group": "讀書會",
+          "endDate": "結束日期與時間"
         },
         "date": "日期和時間",
         "location": "地點",
@@ -331,7 +332,8 @@
           "Workshop": "工作坊",
           "Panel": "座談會",
           "Social": "社交活動",
-          "Study Group": "讀書會"
+          "Study Group": "讀書會",
+          "endDate": "結束日期與時間"
         },
         "date": "日期和時間",
         "location": "地點",
@@ -419,6 +421,7 @@
     "payByCardWorking": "正在前往安全結帳…",
     "payByCardError": "無法開始信用卡付款，請再試一次或改用 e-Transfer。",
     "orPayByEtransfer": "或改用下面的 e-Transfer 付款",
+    "downloadIcs": "下載 .ics 檔案",
     "statuses": {
       "paid": "已付款",
       "pending": "等待確認",

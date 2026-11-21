@@ -9,6 +9,7 @@ type EventInput = {
   title?: unknown;
   category?: unknown;
   startsAt?: unknown;
+  endsAt?: unknown;
   location?: unknown;
   locationType?: unknown;
   meetingUrl?: unknown;
@@ -62,6 +63,14 @@ export async function POST(request: Request) {
   if (Number.isNaN(startDate.getTime()) || startDate <= new Date()) {
     return NextResponse.json({ error: "The event date must be in the future." }, { status: 400 });
   }
+  const endsAtInput = typeof input.endsAt === "string" && input.endsAt ? new Date(input.endsAt) : null;
+  const endDate = endsAtInput && !Number.isNaN(endsAtInput.getTime())
+    ? endsAtInput
+    : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  if (endDate <= startDate) {
+    return NextResponse.json({ error: "The end time must be after the start time." }, { status: 400 });
+  }
+
   const paymentDeadline = priceCad > 0 ? paymentDeadlineInput ?? new Date(startDate.getTime() - 24 * 60 * 60 * 1000) : null;
   if (paymentDeadline && (Number.isNaN(paymentDeadline.getTime()) || paymentDeadline > startDate)) {
     return NextResponse.json({ error: "The payment deadline must be before the event starts." }, { status: 400 });
@@ -74,7 +83,9 @@ export async function POST(request: Request) {
       title,
       category,
       starts_at: startDate.toISOString(),
+      ends_at: endDate.toISOString(),
       location,
+
       location_type: locationType,
       meeting_url: meetingUrl || null,
       price_cad: priceCad,

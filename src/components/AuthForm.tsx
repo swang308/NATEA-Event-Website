@@ -16,7 +16,6 @@ export type AuthFormLabels = {
   confirmation: string;
   google: string;
   googleWorking: string;
-  newsletter?: string;
 };
 
 type AuthFormProps = {
@@ -30,7 +29,6 @@ export function AuthForm({ mode, locale, labels }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [preferredLanguage, setPreferredLanguage] = useState(locale === "zh-TW" ? "zh-TW" : "en");
-  const [newsletter, setNewsletter] = useState(false);
   const [error, setError] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,13 +52,6 @@ export function AuthForm({ mode, locale, labels }: AuthFormProps) {
           : await supabase.auth.signInWithPassword({ email, password });
 
       if (result.error) throw result.error;
-
-      if (mode === "signup" && newsletter) {
-        await supabase.from("newsletter_subscribers").upsert(
-          { email },
-          { onConflict: "email" }
-        );
-      }
 
       if (mode === "signup") {
         window.location.assign(`/${locale}`);
@@ -120,12 +111,6 @@ export function AuthForm({ mode, locale, labels }: AuthFormProps) {
               <option value="en">{labels.english}</option>
               <option value="zh-TW">{labels.chinese}</option>
             </select>
-          </label>
-        )}
-        {mode === "signup" && (
-          <label className="flex items-start gap-2 text-sm font-normal leading-6 text-muted">
-            <input type="checkbox" checked={newsletter} onChange={(event) => setNewsletter(event.target.checked)} className="mt-1" />
-            {labels.newsletter}
           </label>
         )}
 

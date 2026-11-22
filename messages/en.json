@@ -150,6 +150,12 @@
       }
     },
     "myEvents": {
+      "payByCardTitle": "Pay by card",
+      "payByCard": "Pay by card",
+      "payByCardWorking": "Redirecting to secure checkout…",
+      "payByCardError": "Could not start card payment. Please try again or pay by e-Transfer.",
+      "payByEtransferTitle": "Pay by e-Transfer",
+      "orPayByEtransfer": "or",
       "guest": "Guest",
       "addGuest": "Add guest name",
       "title": "My events",

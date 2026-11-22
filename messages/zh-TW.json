@@ -150,6 +150,12 @@
       }
     },
     "myEvents": {
+      "payByCardTitle": "用信用卡付款",
+      "payByCard": "用信用卡付款",
+      "payByCardWorking": "正在前往安全結帳…",
+      "payByCardError": "無法開始信用卡付款，請再試一次或改用 e-Transfer。",
+      "payByEtransferTitle": "用 e-Transfer 付款",
+      "orPayByEtransfer": "或",
       "guest": "同行者",
       "addGuest": "新增同行者姓名",
       "title": "我的活動",

@@ -380,6 +380,10 @@
     "empty": "目前沒有等待審核的活動。"
   },
   "EventDetail": {
+    "total": "總計：{amount}",
+    "payByCardTitle": "用信用卡付款",
+    "payByCardNote": "即時付款 — 馬上確認你的名額。",
+    "payByEtransferTitle": "用 e-Transfer 付款",
     "copyLink": "複製連結",
     "back": "所有活動",
     "openMap": "在 Google Maps 開啟地點",
@@ -461,7 +465,7 @@
       "error": "無法更新付款狀態。",
       "confirmation": "你已完成 Interac e-Transfer 嗎？請在付款送出後再確認。",
       "sentConfirmation": "謝謝！你的付款已提交，等待主辦人確認。",
-      "deadline": "請於 {date} 前完成付款。",
+      "deadline": "請於 {date} 前完成付款",
       "overdue": "付款已逾期"
     },
     "organizerPayments": {

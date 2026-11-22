@@ -104,14 +104,34 @@ export default async function EventDetailPage({ params }: Props) {
               {event.price_cad > 0 && <p className="mt-1 text-sm text-muted">{t("perPerson")}</p>}
               {currentRsvp && event.price_cad > 0 && (
                 <p className="mt-3 text-sm font-bold text-ink">
-                  {currentRsvp.payment_status === "paid" ? t("paidTotal", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD` }) : t("rsvpTotal", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD` })}
+                  {(currentRsvp?.plus_ones ?? 0) > 0
+                    ? currentRsvp.payment_status === "paid"
+                      ? t("paidTotal", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD` })
+                      : t("rsvpTotal", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD` })
+                    : currentRsvp.payment_status === "paid"
+                      ? t("paidTotal", { amount: `$${event.price_cad} CAD` })
+                      : t("total", { amount: `$${event.price_cad} CAD` })}
                 </p>
               )}
+
               <p className="mt-5 text-sm font-bold text-ink">{t("spots", { count: event.attendee_count, capacity: event.capacity })}</p>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-teal" style={{ width: `${Math.min((event.attendee_count / event.capacity) * 100, 100)}%` }} /></div>
               {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} labels={t.raw("rsvp") as never} /> : <Link href={`/login?redirect=/events/${id}`} className="mt-6 inline-flex w-full justify-center rounded-full bg-teal px-5 py-3.5 font-bold text-white">{t("loginToRsvp")}</Link>}
-              {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "unpaid" && <div className="mt-6 border-t border-line pt-5"><PayByCardButton eventId={id} totalCents={event.price_cad * 100 * (1 + (currentRsvp?.plus_ones ?? 0))} labels={{ payByCard: t("payByCard"), payByCardWorking: t("payByCardWorking"), payByCardError: t("payByCardError") }} /><p className="mt-3 text-center text-sm text-muted">{t("orPayByEtransfer")}</p><p className="mt-3 text-sm leading-6 text-muted">{t("payment.instructions", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD`, email: event.etransfer_email || t("payment.emailMissing") })}</p>
-                {paymentDeadline && <p className="mt-2 text-xs font-bold text-muted">{t("payment.deadline", { date: new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(paymentDeadline) })}</p>}{paymentDeadline && paymentDeadline <= new Date() && <p className="mt-2 text-sm font-bold text-red-700">{t("payment.overdue")}</p>}<div className="mt-4"><PaymentButton eventId={id} rsvpId={currentRsvp.id} action="mark-sent" label={t("payment.markSent")} working={t("payment.working")} error={t("payment.error")} success={t("payment.sentConfirmation")} confirmation={t("payment.confirmation")} /></div></div>}
+              {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "unpaid" && <div className="mt-6 space-y-4 border-t border-line pt-5">
+                <div className="rounded-2xl bg-teal/10 p-4">
+                  <p className="text-sm font-bold text-ink">{t("payByCardTitle")}</p>
+                  <p className="mt-1 text-xs text-muted">{t("payByCardNote")}</p>
+                  <div className="mt-3"><PayByCardButton eventId={id} totalCents={event.price_cad * 100 * (1 + (currentRsvp?.plus_ones ?? 0))} labels={{ payByCard: t("payByCard"), payByCardWorking: t("payByCardWorking"), payByCardError: t("payByCardError") }} /></div>
+                </div>
+                <p className="text-center text-sm font-bold text-muted">{t("orPayByEtransfer")}</p>
+                <div className="rounded-2xl border border-line bg-white p-4">
+                  <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted">{t("payment.instructions", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD`, email: event.etransfer_email || t("payment.emailMissing") })}</p>
+                  {paymentDeadline && <p className="mt-2 text-xs font-bold text-muted">{t("payment.deadline", { date: new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(paymentDeadline) })}</p>}{paymentDeadline && paymentDeadline <= new Date() && <p className="mt-2 text-sm font-bold text-red-700">{t("payment.overdue")}</p>}
+                  <div className="mt-4"><PaymentButton eventId={id} rsvpId={currentRsvp.id} action="mark-sent" label={t("payment.markSent")} working={t("payment.working")} error={t("payment.error")} success={t("payment.sentConfirmation")} confirmation={t("payment.confirmation")} /></div>
+                </div>
+              </div>}
+
               {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "pending" && <p role="status" className="mt-6 border-t border-line pt-5 text-sm font-bold text-green-800">{t("payment.sentConfirmation")}</p>}
               <div className="mt-6 rounded-2xl border border-line bg-bg2 p-5">
                 <h3 className="display text-lg font-extrabold">{t("date")}</h3>

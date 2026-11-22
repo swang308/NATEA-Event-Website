@@ -380,6 +380,7 @@
     "empty": "No events are waiting for approval."
   },
   "EventDetail": {
+    "copyLink": "Copy link",
     "back": "All events",
     "openMap": "Open location in Google Maps",
     "openInMaps": "Open in Google Maps",

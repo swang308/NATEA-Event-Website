@@ -380,6 +380,7 @@
     "empty": "目前沒有等待審核的活動。"
   },
   "EventDetail": {
+    "copyLink": "複製連結",
     "back": "所有活動",
     "openMap": "在 Google Maps 開啟地點",
     "openInMaps": "在 Google 地圖開啟",

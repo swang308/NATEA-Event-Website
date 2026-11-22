@@ -194,6 +194,9 @@ export default async function EventDetailPage({ params }: Props) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qrUrl} alt={t("share")} className="h-28 w-28 rounded-lg" />
               </div>
+              <div className="mt-4 flex justify-center">
+                <CopyButton value={eventUrl} label={t("copyLink")} copiedLabel={t("copied")} />
+              </div>
             </section>
           </div>
 

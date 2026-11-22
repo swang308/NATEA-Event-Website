@@ -232,7 +232,7 @@
         "cancelRequested": "Cancellation requested — please confirm and refund:"
       },
       "paidSection": {
-        "title": "Paid",
+        "title": "Payments you received",
         "confirmed": "Confirmed: {amount}",
         "empty": "You have not received any payments yet.",
         "paidOn": "Paid on {date}",

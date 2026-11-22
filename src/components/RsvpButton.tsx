@@ -156,7 +156,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
         <div className="mt-3 text-center">
           {!editingGuest ? (
             <p className="text-sm font-medium text-muted">
-              {labels.guestName}: {plusOneName || "—"}{" "}
+              {labels.guestName}: {plusOneName || labels.guest}{" "}
               <button onClick={() => { setGuestNameDraft(plusOneName); setEditingGuest(true); }} className="font-bold text-teal-d underline underline-offset-4">{labels.editGuest}</button>
             </p>
           ) : (

@@ -23,7 +23,7 @@ export type PublicEvent = {
   attendee_count: number;
 };
 
-export async function getPublishedEvents(): Promise<PublicEvent[]> {
+export async function getPublishedEvents() {
   const supabase = await createClient();
   const { data: events, error } = await supabase
     .from("events")

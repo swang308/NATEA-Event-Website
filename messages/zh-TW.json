@@ -232,7 +232,7 @@
         "cancelRequested": "有人申請取消報名 — 請確認並退款："
       },
       "paidSection": {
-        "title": "已付款",
+        "title": "你收到的款項",
         "confirmed": "已確認：{amount}",
         "empty": "你尚未收到任何款項。",
         "paidOn": "付款日期：{date}",

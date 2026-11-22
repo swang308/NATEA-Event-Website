@@ -5,7 +5,7 @@ import { getPublishedEvent } from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpButton } from "@/components/RsvpButton";
 import PayByCardButton from "@/components/PayByCardButton";
-import { PaymentButton } from "@/components/PaymentButton";
+// import { PaymentButton } from "@/components/PaymentButton"; # e-transfer
 import { CopyButton } from "@/components/CopyButton";
 import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { connection } from "next/server";
@@ -48,7 +48,7 @@ export default async function EventDetailPage({ params }: Props) {
   }).format(new Date(event.starts_at));
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`;
   const eventStart = new Date(event.starts_at);
-  const paymentDeadline = event.payment_deadline ? new Date(event.payment_deadline) : null;
+  // const paymentDeadline = event.payment_deadline ? new Date(event.payment_deadline) : null; # e-transfer
   const eventEnd = event.ends_at ? new Date(event.ends_at) : new Date(eventStart.getTime() + 2 * 60 * 60 * 1000);
   const calendarStart = eventStart.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
   const calendarEnd = eventEnd.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
@@ -123,16 +123,16 @@ export default async function EventDetailPage({ params }: Props) {
                   <p className="mt-1 text-xs text-muted">{t("payByCardNote")}</p>
                   <div className="mt-3"><PayByCardButton eventId={id} totalCents={event.price_cad * 100 * (1 + (currentRsvp?.plus_ones ?? 0))} labels={{ payByCard: t("payByCard"), payByCardWorking: t("payByCardWorking"), payByCardError: t("payByCardError") }} /></div>
                 </div>
-                <p className="text-center text-sm font-bold text-muted">{t("orPayByEtransfer")}</p>
+                {/* <p className="text-center text-sm font-bold text-muted">{t("orPayByEtransfer")}</p>
                 <div className="rounded-2xl border border-line bg-white p-4">
                   <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
                   <p className="mt-2 text-sm leading-6 text-muted">{t("payment.instructions", { amount: `$${event.price_cad * (1 + (currentRsvp?.plus_ones ?? 0))} CAD`, email: event.etransfer_email || t("payment.emailMissing") })}</p>
                   {paymentDeadline && <p className="mt-2 text-xs font-bold text-muted">{t("payment.deadline", { date: new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(paymentDeadline) })}</p>}{paymentDeadline && paymentDeadline <= new Date() && <p className="mt-2 text-sm font-bold text-red-700">{t("payment.overdue")}</p>}
                   <div className="mt-4"><PaymentButton eventId={id} rsvpId={currentRsvp.id} action="mark-sent" label={t("payment.markSent")} working={t("payment.working")} error={t("payment.error")} success={t("payment.sentConfirmation")} confirmation={t("payment.confirmation")} /></div>
-                </div>
+                </div> */}
               </div>}
 
-              {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "pending" && <p role="status" className="mt-6 border-t border-line pt-5 text-sm font-bold text-green-800">{t("payment.sentConfirmation")}</p>}
+              {/* {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "pending" && <p role="status" className="mt-6 border-t border-line pt-5 text-sm font-bold text-green-800">{t("payment.sentConfirmation")}</p>} */}
               <div className="mt-6 rounded-2xl border border-line bg-bg2 p-5">
                 <h3 className="display text-lg font-extrabold">{t("date")}</h3>
                 <p className="mt-1 text-muted">{date} – {endTime}</p>

@@ -43,12 +43,17 @@ export async function POST(request: Request, { params }: Props) {
       : { payment_status: nextStatus };
   const { error } = await supabase.from("rsvps").update(paymentUpdate).eq("id", rsvp.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  // If this was a Stripe card payment, refund the card too.
-  // If it was e-Transfer, stripe_payment_intent_id is null, so skip it.
+  // If this was a Stripe card payment, refund the card too, minus the Stripe fee.
+  // Stripe keeps its 2.9% + $0.30 fee on refunds, so we refund total - fee.
+  // $40 ticket -> $38.54 back, $80 guest ticket -> $77.38 back.
   if (action === "refund" && rsvp.stripe_payment_intent_id) {
     try {
+      const totalCents = (eventInfo?.price_cad ?? 0) * 100 * (1 + (rsvp.plus_ones ?? 0));
+      const feeCents = Math.round(totalCents * 0.029 + 30);
+      const refundAmountCents = totalCents - feeCents;
       await stripe.refunds.create({
         payment_intent: rsvp.stripe_payment_intent_id,
+        amount: refundAmountCents,
       });
     } catch (refundError) {
       console.error("Stripe refund failed:", refundError);

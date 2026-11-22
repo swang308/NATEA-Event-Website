@@ -150,6 +150,8 @@
       }
     },
     "myEvents": {
+      "guest": "同行者",
+      "addGuest": "新增同行者姓名",
       "title": "我的活動",
       "description": "管理你主辦和參加的活動。",
       "back": "返回首頁",
@@ -455,7 +457,8 @@
       "cancelRequested": "已申請取消 — 等待主辦人確認",
       "editGuest": "編輯同行者姓名",
       "saveGuest": "儲存",
-      "cancelEdit": "取消"
+      "cancelEdit": "取消",
+      "guest": "同行者"
     },
     "payment": {
       "instructions": "請以 Interac e-Transfer 將 {amount} 轉給 {email}，備註請填寫活動名稱和你的姓名。",

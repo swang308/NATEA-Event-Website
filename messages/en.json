@@ -150,6 +150,8 @@
       }
     },
     "myEvents": {
+      "guest": "Guest",
+      "addGuest": "Add guest name",
       "title": "My events",
       "description": "Manage the events you host and the events you’re attending.",
       "back": "Back to home",
@@ -455,7 +457,8 @@
       "cancelRequested": "Cancellation requested — waiting for the host to confirm",
       "editGuest": "Edit guest name",
       "saveGuest": "Save",
-      "cancelEdit": "Cancel"
+      "cancelEdit": "Cancel",
+      "guest": "Guest"
     },
     "payment": {
       "instructions": "Send {amount} by Interac e-Transfer to {email}. Use the event name and your name in the message.",

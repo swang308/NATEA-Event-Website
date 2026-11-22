@@ -8,11 +8,14 @@ type Props = {
   labels: {
     guestName: string;
     guestNamePlaceholder: string;
+    guest: string;
     editGuest: string;
+    addGuest: string;
     saveGuest: string;
     cancelEdit: string;
     error: string;
   };
+
 };
 
 export function GuestNameEditor({ eventId, initialName, labels }: Props) {
@@ -45,8 +48,8 @@ export function GuestNameEditor({ eventId, initialName, labels }: Props) {
   if (!editing) {
     return (
       <p className="mt-1 text-sm text-muted">
-        {labels.guestName}: {name || "—"}{" "}
-        <button onClick={() => { setDraft(name); setEditing(true); }} className="font-bold text-teal-d underline underline-offset-4">{labels.editGuest}</button>
+        {labels.guestName}: {name || labels.guest}{" "}
+        <button onClick={() => { setDraft(name); setEditing(true); }} className="font-bold text-teal-d underline underline-offset-4">{name ? labels.editGuest : labels.addGuest}</button>
       </p>
     );
   }

@@ -130,8 +130,8 @@ export default async function MyEventsPage({ params }: Props) {
           />
         )}{isPaid && rsvp.payment_status === "unpaid" && <div className="mt-4 space-y-3">
           <div className="rounded-xl bg-teal/10 p-4">
-            <p className="text-sm font-bold text-ink">{t("payByCardTitle")}</p>
-            <div className="mt-3"><PayByCardButton eventId={rsvp.event_id} totalCents={eventInfo.price_cad * 100 * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} labels={{ payByCard: t("payByCard"), payByCardWorking: t("payByCardWorking"), payByCardError: t("payByCardError") }} /></div>
+            <div className="mx-auto max-w-sm"><PayByCardButton eventId={rsvp.event_id} totalCents={eventInfo.price_cad * 100 * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} labels={{ payByCard: t("payByCard"), payByCardWorking: t("payByCardWorking"), payByCardError: t("payByCardError") }} /></div>
+            <p className="mt-2 text-center text-xs text-muted">{t("payByCardNote")}</p>
           </div>
           <p className="text-center text-sm font-bold text-muted">{t("orPayByEtransfer")}</p>
           <div className="rounded-xl border border-line bg-white p-4">

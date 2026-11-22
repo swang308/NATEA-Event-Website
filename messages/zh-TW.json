@@ -150,6 +150,7 @@
       }
     },
     "myEvents": {
+      "payByCardNote": "即時付款 — 馬上確認你的名額。",
       "payByCardTitle": "用信用卡付款",
       "payByCard": "用信用卡付款",
       "payByCardWorking": "正在前往安全結帳…",
@@ -200,7 +201,7 @@
       "working": "更新中…",
       "paymentError": "無法確認付款。",
       "paymentInstructions": "請以 Interac e-Transfer 將 {amount} 轉給 {email}，備註請填寫活動名稱和你的姓名。",
-      "paymentDeadline": "請於 {date} 前完成付款。",
+      "paymentDeadline": "請於 {date} 前完成付款",
       "paymentOverdue": "付款已逾期",
       "paymentEmailMissing": "主辦人尚未提供 Email",
       "markSent": "我已付款",

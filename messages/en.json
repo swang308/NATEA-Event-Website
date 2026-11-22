@@ -150,6 +150,7 @@
       }
     },
     "myEvents": {
+      "payByCardNote": "Instant — your spot is confirmed right away.",
       "payByCardTitle": "Pay by card",
       "payByCard": "Pay by card",
       "payByCardWorking": "Redirecting to secure checkout…",
@@ -200,7 +201,7 @@
       "working": "Updating…",
       "paymentError": "Unable to confirm payment.",
       "paymentInstructions": "Send {amount} by Interac e-Transfer to {email}. Use the event name and your name in the message.",
-      "paymentDeadline": "Please send payment by {date}.",
+      "paymentDeadline": "Please send payment by {date}",
       "paymentOverdue": "Payment overdue",
       "paymentEmailMissing": "the organizer’s listed email",
       "markSent": "I’ve sent it",

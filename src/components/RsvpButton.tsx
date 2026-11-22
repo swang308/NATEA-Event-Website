@@ -27,6 +27,7 @@ type Props = {
     bringGuest: string;
     guestName: string;
     guestNamePlaceholder: string;
+    guest: string;
     guestNote: string;
     editGuest: string;
     saveGuest: string;

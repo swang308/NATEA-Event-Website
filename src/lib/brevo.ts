@@ -50,13 +50,43 @@ export async function getProfileEmailRecipient(userId: string): Promise<EmailRec
   return profile ? { email: profile.email, name: profile.display_name } : null;
 }
 
-export async function sendPaymentReminderEmail(recipient: EmailRecipient, eventTitle: string, amount: string, email: string, deadline: string) {
-  await sendBrevoEmail(
-    `Payment reminder: ${eventTitle}`,
-    [recipient],
-    `<p>Please send ${amount} by Interac e-Transfer to ${email} for <strong>${eventTitle}</strong>.</p><p>Please send payment by <strong>${deadline}</strong>.</p>`,
-  );
+export async function sendPaymentReminderEmail({
+  toEmail,
+  toName,
+  eventTitle,
+  amount,
+  deadline,
+  eventUrl,
+}: {
+  toEmail: string;
+  toName: string;
+  eventTitle: string;
+  amount: string;
+  deadline: string;
+  eventUrl: string;
+}) {
+  const html = `<div style="font-family: 'DM Sans', Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; color: #17202b;">
+  <div style="background: linear-gradient(135deg, #2ea6b5 0%, #7b2d8e 100%); padding: 32px 24px; text-align: center;">
+    <div style="display: inline-block; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 14px; color: #ffffff; font-size: 24px; font-weight: bold;">N</div>
+    <div style="color: #ffffff; font-size: 22px; font-weight: bold; letter-spacing: 1px; margin-top: 12px;">NATEA</div>
+    <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px;">TORONTO IT COMMUNITY</div>
+  </div>
+  <div style="padding: 32px 24px;">
+    <h2 style="font-size: 22px; margin: 0 0 16px; color: #17202b;">Payment reminder: ${eventTitle}</h2>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, you RSVP'd for <strong>${eventTitle}</strong> but haven't paid yet. Please pay <strong>${amount}</strong> by card by <strong>${deadline}</strong> to keep your spot.</p>
+    <p style="margin: 28px 0; text-align: center;">
+      <a href="${eventUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">Pay now</a>
+    </p>
+  </div>
+  <div style="border-top: 1px solid #eeeeee; padding: 20px 24px; text-align: center;">
+    <p style="font-size: 13px; color: #888888; margin: 0;">Learn together, in Toronto.</p>
+    <p style="font-size: 13px; color: #888888; margin: 8px 0 0;">— The NATEA team</p>
+  </div>
+</div>`;
+
+  await sendBrevoEmail(`Payment reminder: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
 }
+
 
 export async function sendRsvpConfirmationEmail({
   toEmail,
@@ -213,4 +243,50 @@ export async function sendPaymentReportedEmail({
 </div>`;
 
   await sendBrevoEmail(`Payment reported for ${eventTitle}`, [{ email: toEmail, name: toName }], html);
+}
+
+export async function sendEventReminderEmail({
+  toEmail,
+  toName,
+  eventTitle,
+  eventDate,
+  eventLocation,
+  eventUrl,
+  guestName,
+}: {
+  toEmail: string;
+  toName: string;
+  eventTitle: string;
+  eventDate: string;
+  eventLocation: string;
+  eventUrl: string;
+  guestName: string | null;
+}) {
+  const guestBlock = guestName
+    ? `<p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">Guest: <strong>${guestName}</strong></p>`
+    : "";
+
+  const html = `<div style="font-family: 'DM Sans', Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; color: #17202b;">
+  <div style="background: linear-gradient(135deg, #2ea6b5 0%, #7b2d8e 100%); padding: 32px 24px; text-align: center;">
+    <div style="display: inline-block; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 14px; color: #ffffff; font-size: 24px; font-weight: bold;">N</div>
+    <div style="color: #ffffff; font-size: 22px; font-weight: bold; letter-spacing: 1px; margin-top: 12px;">NATEA</div>
+    <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px;">TORONTO IT COMMUNITY</div>
+  </div>
+  <div style="padding: 32px 24px;">
+    <h2 style="font-size: 22px; margin: 0 0 16px; color: #17202b;">See you tomorrow — ${eventTitle}!</h2>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, your event is tomorrow. Here are the details:</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">📅 ${eventDate}</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">📍 ${eventLocation}</p>
+    ${guestBlock}
+    <p style="margin: 28px 0; text-align: center;">
+      <a href="${eventUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">View event</a>
+    </p>
+  </div>
+  <div style="border-top: 1px solid #eeeeee; padding: 20px 24px; text-align: center;">
+    <p style="font-size: 13px; color: #888888; margin: 0;">Learn together, in Toronto.</p>
+    <p style="font-size: 13px; color: #888888; margin: 8px 0 0;">— The NATEA team</p>
+  </div>
+</div>`;
+
+  await sendBrevoEmail(`Tomorrow: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
 }

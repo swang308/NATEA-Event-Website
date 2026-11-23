@@ -10,6 +10,7 @@ export async function GET(request: Request) {
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
   if (!url || !serviceKey) return NextResponse.json({ error: "Server email configuration is incomplete." }, { status: 500 });
   const supabase = createClient(url, serviceKey);
   const now = new Date();
@@ -24,13 +25,14 @@ export async function GET(request: Request) {
     for (const rsvp of rsvps ?? []) {
       const { data: profile } = await supabase.from("profiles").select("email, display_name").eq("id", rsvp.user_id).maybeSingle();
       if (!profile || !event.payment_deadline) continue;
-      await sendPaymentReminderEmail(
-        { email: profile.email, name: profile.display_name },
-        event.title,
-        `$${event.price_cad} CAD`,
-        event.etransfer_email || "the organizer’s listed email",
-        new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.payment_deadline)),
-      );
+      await sendPaymentReminderEmail({
+        toEmail: profile.email,
+        toName: profile.display_name,
+        eventTitle: event.title,
+        amount: `$${event.price_cad} CAD`,
+        deadline: new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Toronto" }).format(new Date(event.payment_deadline)),
+        eventUrl: `${siteUrl}/events/${event.id}`,
+      });
       await supabase.from("rsvps").update({ payment_reminder_sent_at: now.toISOString() }).eq("id", rsvp.id);
       sent += 1;
     }

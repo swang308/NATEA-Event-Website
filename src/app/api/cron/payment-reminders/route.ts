@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   if (!url || !serviceKey) return NextResponse.json({ error: "Server email configuration is incomplete." }, { status: 500 });
   const supabase = createClient(url, serviceKey);
   const now = new Date();
-  const windowEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const windowEnd = new Date(now.getTime() + 48 * 60 * 60 * 1000);
   const { data: events, error: eventError } = await supabase.from("events").select("id, title, price_cad, etransfer_email, payment_deadline").eq("status", "published").gt("payment_deadline", now.toISOString()).lte("payment_deadline", windowEnd.toISOString());
   if (eventError) return NextResponse.json({ error: eventError.message }, { status: 500 });
 

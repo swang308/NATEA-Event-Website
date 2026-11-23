@@ -136,6 +136,12 @@ export async function PATCH(request: Request, { params }: Props) {
   // Free / unpaid: delete immediately
   const { error } = await supabase.from("rsvps").delete().eq("event_id", id).eq("user_id", user.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  try {
+    const { promoteNextWaitlisted } = await import("@/lib/waitlist");
+    await promoteNextWaitlisted(id);
+  } catch (promoteError) {
+    console.error("Waitlist promotion failed:", promoteError);
+  }
   return NextResponse.json({ ok: true });
 }
 
@@ -148,5 +154,11 @@ export async function DELETE(_request: Request, { params }: Props) {
 
   const { error } = await supabase.from("rsvps").delete().eq("event_id", id).eq("user_id", user.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  try {
+    const { promoteNextWaitlisted } = await import("@/lib/waitlist");
+    await promoteNextWaitlisted(id);
+  } catch (promoteError) {
+    console.error("Waitlist promotion failed:", promoteError);
+  }
   return NextResponse.json({ ok: true });
 }

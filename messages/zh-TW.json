@@ -454,7 +454,10 @@
       "editGuest": "編輯同行者姓名",
       "saveGuest": "儲存",
       "cancelEdit": "取消",
-      "guest": "同行者"
+      "guest": "同行者",
+      "joinWaitlist": "加入候補名單",
+      "leaveWaitlist": "退出候補名單",
+      "onWaitlist": "你已在候補名單上"
     },
     "organizerPayments": {
       "title": "待確認的付款",

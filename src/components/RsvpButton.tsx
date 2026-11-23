@@ -10,6 +10,8 @@ type Props = {
   priceCents: number;
   initialPlusOnes?: number;
   initialPlusOneName?: string | null;
+  isFull?: boolean;
+  isWaitlisted?: boolean;
   labels: {
     rsvp: string;
     cancel: string;
@@ -32,10 +34,13 @@ type Props = {
     editGuest: string;
     saveGuest: string;
     cancelEdit: string;
+    joinWaitlist: string;
+    leaveWaitlist: string;
+    onWaitlist: string;
   };
 };
 
-export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, labels }: Props) {
+export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, isFull = false, isWaitlisted = false, labels }: Props) {
   const router = useRouter();
   const [rsvped, setRsvped] = useState(isRsvped);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(paymentStatus);
@@ -45,6 +50,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
   const [guestNameDraft, setGuestNameDraft] = useState(initialPlusOneName ?? "");
   const [error, setError] = useState("");
   const [working, setWorking] = useState(false);
+  const [waitlisted, setWaitlisted] = useState(isWaitlisted);
 
   const isPaidRsvp = currentPaymentStatus === "paid" || currentPaymentStatus === "pending";
 
@@ -69,9 +75,31 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
     }
   }
 
+  async function toggleWaitlist() {
+    setError("");
+    setWorking(true);
+    try {
+      const response = await fetch(`/api/events/${eventId}/waitlist`, {
+        method: waitlisted ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: waitlisted ? undefined : JSON.stringify({
+          plus_ones: plusOnes,
+          plus_one_name: plusOnes > 0 ? plusOneName.trim() || null : null,
+        }),
+      });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(result.error || labels.error);
+      setWaitlisted(!waitlisted);
+      router.refresh();
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : labels.error);
+    } finally {
+      setWorking(false);
+    }
+  }
+
   async function toggleRsvp() {
     setError("");
-    // Cancelling — confirm first, and paid RSVPs go through the host
     if (rsvped) {
       if (!window.confirm(isPaidRsvp ? labels.cancelPaidConfirm : labels.cancelConfirm)) return;
       setWorking(true);
@@ -84,10 +112,8 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
         const result = await response.json() as { error?: string; requested?: boolean };
         if (!response.ok) throw new Error(result.error || labels.error);
         if (result.requested) {
-          // Paid: RSVP stays, host must confirm + refund
           setCurrentPaymentStatus("cancel_requested");
         } else {
-          // Free / unpaid: deleted immediately
           setRsvped(false);
         }
         router.refresh();
@@ -98,7 +124,6 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
       }
       return;
     }
-    // RSVPing — unchanged
     setWorking(true);
     try {
       const response = await fetch(`/api/events/${eventId}/rsvp`, {
@@ -118,6 +143,41 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
     } finally {
       setWorking(false);
     }
+  }
+
+  // Full event, not RSVP'd: show waitlist instead of RSVP
+  if (!rsvped && isFull) {
+    return (
+      <div>
+        {!waitlisted && priceCents > 0 && (
+          <div className="mt-6 space-y-3 rounded-xl border border-line bg-bg2 p-4">
+            <label className="flex items-center gap-2 text-sm font-bold">
+              <input
+                type="checkbox"
+                checked={plusOnes === 1}
+                onChange={(event) => setPlusOnes(event.target.checked ? 1 : 0)}
+                className="h-4 w-4 accent-teal"
+              />
+              {labels.bringGuest} (+${(priceCents / 100).toFixed(0)})
+            </label>
+            {plusOnes === 1 && (
+              <input
+                value={plusOneName}
+                onChange={(event) => setPlusOneName(event.target.value)}
+                placeholder={labels.guestNamePlaceholder}
+                className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm outline-none focus:border-teal"
+              />
+            )}
+            <p className="text-xs text-muted">{labels.guestNote}</p>
+          </div>
+        )}
+        <button onClick={toggleWaitlist} disabled={working} className={`mt-6 w-full rounded-full px-5 py-3.5 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${waitlisted ? "border border-line bg-white text-ink" : "bg-teal text-white hover:bg-teal-d"}`}>
+          {working ? labels.working : waitlisted ? labels.leaveWaitlist : labels.joinWaitlist}
+        </button>
+        {waitlisted && <p className="mt-3 text-center text-sm font-medium text-green-d">{labels.onWaitlist}</p>}
+        {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
+      </div>
+    );
   }
 
   return (
@@ -170,7 +230,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
               />
               <div className="flex justify-center gap-2">
                 <button onClick={saveGuestName} disabled={working} className="rounded-full bg-teal px-4 py-2 text-sm font-bold text-white disabled:opacity-60">{labels.saveGuest}</button>
-                <button onClick={() => { setGuestNameDraft(plusOneName); setEditingGuest(false); }} className="rounded-full border border-line px-4 py-2 text-sm font-bold">{labels.cancelEdit}</button>
+                <button onClick={() => { setGuestNameDraft(plusNameName); setEditingGuest(false); }} className="rounded-full border border-line px-4 py-2 text-sm font-bold">{labels.cancelEdit}</button>
               </div>
             </div>
           )}

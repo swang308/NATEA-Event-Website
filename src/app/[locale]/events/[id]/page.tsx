@@ -28,6 +28,11 @@ export default async function EventDetailPage({ params }: Props) {
   const { data: currentRsvp } = user
     ? await supabase.from("rsvps").select("id, payment_status, plus_ones, plus_one_name").eq("event_id", id).eq("user_id", user.id).neq("payment_status", "refunded").maybeSingle()
     : { data: null };
+  const { data: waitlistEntry } = user
+    ? await supabase.from("event_waitlist").select("id").eq("event_id", id).eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const isFull = event.attendee_count >= event.capacity;
+  const isWaitlisted = Boolean(waitlistEntry);
   const { data: attendees } = await supabase.from("public_event_attendees").select("display_name, avatar_url, avatar_emoji, payment_status, plus_ones, plus_one_name").eq("event_id", id).order("display_name");
   const { data: organizer } = await supabase.from("public_event_organizers").select("display_name, avatar_url").eq("event_id", id).maybeSingle();
   const isOrganizer = Boolean(user && event.organizer_id === user.id);
@@ -116,7 +121,8 @@ export default async function EventDetailPage({ params }: Props) {
 
               <p className="mt-5 text-sm font-bold text-ink">{t("spots", { count: event.attendee_count, capacity: event.capacity })}</p>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-teal" style={{ width: `${Math.min((event.attendee_count / event.capacity) * 100, 100)}%` }} /></div>
-              {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} labels={t.raw("rsvp") as never} /> : <Link href={`/login?redirect=/events/${id}`} className="mt-6 inline-flex w-full justify-center rounded-full bg-teal px-5 py-3.5 font-bold text-white">{t("loginToRsvp")}</Link>}
+              {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} isFull={isFull} isWaitlisted={isWaitlisted} labels={t.raw("rsvp") as never} />
+                : <Link href={`/login?redirect=/events/${id}`} className="mt-6 inline-flex w-full justify-center rounded-full bg-teal px-5 py-3.5 font-bold text-white">{t("loginToRsvp")}</Link>}
               {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "unpaid" && <div className="mt-6 space-y-4 border-t border-line pt-5">
                 <div className="rounded-2xl bg-teal/10 p-4">
                   <p className="text-sm font-bold text-ink">{t("payByCardTitle")}</p>

@@ -454,7 +454,10 @@
       "editGuest": "Edit guest name",
       "saveGuest": "Save",
       "cancelEdit": "Cancel",
-      "guest": "Guest"
+      "guest": "Guest",
+      "joinWaitlist": "Join waitlist",
+      "leaveWaitlist": "Leave waitlist",
+      "onWaitlist": "You're on the waitlist"
     },
     "organizerPayments": {
       "title": "Payment confirmations to review",

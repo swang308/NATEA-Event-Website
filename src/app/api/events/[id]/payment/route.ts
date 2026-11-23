@@ -60,6 +60,15 @@ export async function POST(request: Request, { params }: Props) {
     }
   }
 
+  if (action === "refund") {
+    try {
+      const { promoteNextWaitlisted } = await import("@/lib/waitlist");
+      await promoteNextWaitlisted(id);
+    } catch (promoteError) {
+      console.error("Waitlist promotion failed:", promoteError);
+    }
+  }
+
   if (action === "mark-sent") {
     const organizer = await getProfileEmailRecipient(organizerId);
     const attendee = await supabase.from("profiles").select("display_name").eq("id", rsvp.user_id).maybeSingle();

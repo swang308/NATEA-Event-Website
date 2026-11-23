@@ -230,7 +230,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
               />
               <div className="flex justify-center gap-2">
                 <button onClick={saveGuestName} disabled={working} className="rounded-full bg-teal px-4 py-2 text-sm font-bold text-white disabled:opacity-60">{labels.saveGuest}</button>
-                <button onClick={() => { setGuestNameDraft(plusNameName); setEditingGuest(false); }} className="rounded-full border border-line px-4 py-2 text-sm font-bold">{labels.cancelEdit}</button>
+                <button onClick={() => { setGuestNameDraft(plusOneName); setEditingGuest(false); }} className="rounded-full border border-line px-4 py-2 text-sm font-bold">{labels.cancelEdit}</button>
               </div>
             </div>
           )}

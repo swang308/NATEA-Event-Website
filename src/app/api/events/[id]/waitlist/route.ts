@@ -32,11 +32,17 @@ export async function POST(request: Request, { params }: Props) {
     .maybeSingle();
   if (existingRsvp) return NextResponse.json({ error: "You already have an RSVP for this event." }, { status: 400 });
 
-  const { data: existingRsvps } = await supabase
-    .from("rsvps")
-    .select("plus_ones")
-    .eq("event_id", id)
-    .neq("payment_status", "refunded");
+  const { createClient: createAdminClient } = await import("@supabase/supabase-js");
+const adminClient = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+const { data: existingRsvps } = await adminClient
+  .from("rsvps")
+  .select("plus_ones")
+  .eq("event_id", id)
+  .neq("payment_status", "refunded");
+;
   const currentCount = (existingRsvps ?? []).reduce(
     (sum, row) => sum + 1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0),
     0

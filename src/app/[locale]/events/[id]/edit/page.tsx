@@ -11,6 +11,23 @@ type Props = { params: Promise<{ locale: string; id: string }> };
 
 export const instant = false;
 
+// Format a UTC timestamp as a Toronto-local "YYYY-MM-DDTHH:mm" string
+// for datetime-local inputs. Must use America/Toronto explicitly —
+// the server runs in UTC, so getTimezoneOffset() would give the wrong time.
+function toTorontoInput(value: string | Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Toronto",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(value));
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+}
+
 export default async function EditEventPage({ params }: Props) {
   const { locale, id } = await params;
   await connection();
@@ -40,15 +57,11 @@ export default async function EditEventPage({ params }: Props) {
       <h1 className="display mt-8 text-3xl font-extrabold">{t("notOrganizer")}</h1><p className="mt-4 text-muted">{t("notOrganizerDescription")}</p><Link href="/my-events" className="mt-8 inline-flex rounded-full bg-teal px-6 py-3.5 font-bold text-white">{t("backToMyEvents")}</Link></section></main>;
   }
 
-  const localStart = new Date(event.starts_at);
-  const startsAt = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-  const localEnd = event.ends_at
-    ? new Date(event.ends_at)
-    : new Date(new Date(event.starts_at).getTime() + 2 * 60 * 60 * 1000);
-  const endsAt = new Date(localEnd.getTime() - localEnd.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-
-  const paymentDeadline = event.payment_deadline ? new Date(event.payment_deadline) : null;
-  const localDeadline = paymentDeadline ? new Date(paymentDeadline.getTime() - paymentDeadline.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : null;
+  const startsAt = toTorontoInput(event.starts_at);
+  const endsAt = event.ends_at
+    ? toTorontoInput(event.ends_at)
+    : toTorontoInput(new Date(new Date(event.starts_at).getTime() + 2 * 60 * 60 * 1000));
+  const localDeadline = event.payment_deadline ? toTorontoInput(event.payment_deadline) : null;
   return <main className="min-h-screen bg-bg2 py-10"><section className="mx-auto w-full max-w-2xl rounded-2xl border border-line bg-card p-8 md:p-12"><Link href="/" className="flex items-center gap-3">
     <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
     <span className="display text-xl font-extrabold tracking-tight">NATEA</span>

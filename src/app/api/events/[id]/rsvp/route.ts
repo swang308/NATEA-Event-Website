@@ -1,24 +1,31 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sendRsvpConfirmationEmail, sendRefundRequestedEmail, sendRsvpCancelledEmail } from "@/lib/brevo";
+import { sendRsvpConfirmationEmail, sendRefundRequestedEmail, sendRsvpCancelledEmail, sendCancelConfirmationEmail } from "@/lib/brevo";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 type Props = { params: Promise<{ id: string }> };
 
-async function notifyOrganizerOfCancel(eventId: string, userId: string, userEmail: string | null, wasPaid: boolean) {
+async function notifyOrganizerOfCancel(eventId: string, userId: string, userEmail: string | null, wasPaid: boolean, refundEmail: string | null = null) {
   try {
     const adminClient = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
     const { data: event } = await adminClient.from("events").select("title, organizer_id, starts_at").eq("id", eventId).single();
-    const { data: attendee } = await adminClient.from("profiles").select("display_name").eq("id", userId).maybeSingle();
+    const { data: attendee } = await adminClient.from("profiles").select("email, display_name").eq("id", userId).maybeSingle();
     const { data: organizer } = await adminClient.from("profiles").select("email, display_name").eq("id", event?.organizer_id).maybeSingle();
+    const eventDate = event ? new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }) : "";
     if (event && organizer?.email) {
       await sendRsvpCancelledEmail({
         toEmail: organizer.email, toName: organizer.display_name ?? "there",
         attendeeName: attendee?.display_name ?? "An attendee",
-        eventTitle: event.title,
-        eventDate: new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }),
-        wasPaid,
+        attendeeEmail: attendee?.email ?? userEmail ?? "",
+        eventTitle: event.title, eventDate, wasPaid,
         eventUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/events/${eventId}`,
+      });
+    }
+    const attendeeEmail = attendee?.email ?? userEmail;
+    if (event && attendeeEmail) {
+      await sendCancelConfirmationEmail({
+        toEmail: attendeeEmail, toName: attendee?.display_name ?? "there",
+        eventTitle: event.title, eventDate, wasPaid, refundEmail,
       });
     }
   } catch (emailError) { console.error("RSVP cancelled email failed:", emailError); }
@@ -165,6 +172,16 @@ export async function PATCH(request: Request, { params }: Props) {
           eventDate: new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }),
           amount: `$${event.price_cad * (1 + (rsvp.plus_ones ?? 0))} CAD`,
           reviewUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/my-events`,
+        });
+      }
+      // Attendee confirmation only (host already got the refund email above)
+      const attendeeEmail = attendee?.email ?? user.email;
+      if (event && attendeeEmail) {
+        await sendCancelConfirmationEmail({
+          toEmail: attendeeEmail, toName: attendee?.display_name ?? "there",
+          eventTitle: event.title,
+          eventDate: new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }),
+          wasPaid: true, refundEmail,
         });
       }
     } catch (emailError) { console.error("Refund requested email failed:", emailError); }

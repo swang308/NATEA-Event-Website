@@ -73,9 +73,9 @@ export async function sendPaymentReminderEmail({
   </div>
   <div style="padding: 32px 24px;">
     <h2 style="font-size: 22px; margin: 0 0 16px; color: #17202b;">Payment reminder: ${eventTitle}</h2>
-    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, you RSVP'd for <strong>${eventTitle}</strong> but haven't paid yet. Please pay <strong>${amount}</strong> by card by <strong>${deadline}</strong> to keep your spot.</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, you RSVP'd for <strong>${eventTitle}</strong> but haven't paid yet. Please send <strong>${amount}</strong> by e-Transfer by <strong>${deadline}</strong> to keep your spot. The e-Transfer email is on the event page.</p>
     <p style="margin: 28px 0; text-align: center;">
-      <a href="${eventUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">Pay now</a>
+      <a href="${eventUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">View event</a>
     </p>
   </div>
   <div style="border-top: 1px solid #eeeeee; padding: 20px 24px; text-align: center;">
@@ -316,11 +316,11 @@ export async function sendWaitlistPromotedEmail({
   </div>
   <div style="padding: 32px 24px;">
     <h2 style="font-size: 22px; margin: 0 0 16px; color: #17202b;">You're in — ${eventTitle}!</h2>
-    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, a spot opened up and you've been moved off the waitlist. Please pay <strong>${amount}</strong> by card to confirm your spot.</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, a spot opened up and you've been moved off the waitlist. Please send <strong>${amount}</strong> by e-Transfer to confirm your spot. The e-Transfer email is on the event page.</p>
     <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">📅 ${eventDate}</p>
     <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">📍 ${eventLocation}</p>
     <p style="margin: 28px 0; text-align: center;">
-      <a href="${eventUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">Pay now</a>
+      <a href="${eventUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">View event</a>
     </p>
   </div>
   <div style="border-top: 1px solid #eeeeee; padding: 20px 24px; text-align: center;">

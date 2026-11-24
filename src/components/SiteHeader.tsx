@@ -20,7 +20,8 @@ export async function SiteHeader({ locale }: { locale: string }) {
     <header className="sticky top-0 z-40 border-b border-line bg-card/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between gap-4">
         <Link href="/" className="flex shrink-0 items-center gap-3">
-          <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/natea-logo.svg" alt="NATEA" className="h-10 w-10" />
           <span className="display text-xl font-extrabold tracking-tight">NATEA</span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-bold lg:flex">

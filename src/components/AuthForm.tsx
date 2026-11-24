@@ -59,7 +59,7 @@ export function AuthForm({ mode, locale, labels }: AuthFormProps) {
       }
 
       if (mode === "signup") {
-        window.location.assign(`/${locale}`);
+        window.location.assign(`/${locale}/profile`);
       } else {
         window.location.assign(`/${locale}`);
       }

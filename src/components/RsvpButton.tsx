@@ -42,6 +42,8 @@ type Props = {
     refundEmailLabel: string;
     refundEmailPlaceholder: string;
     refundEmailRequired: string;
+    confirmRefundRequest: string;
+    back: string;
   };
 };
 
@@ -216,7 +218,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
         </div>
       )}
 
-      {currentPaymentStatus !== "cancel_requested" && (
+      {currentPaymentStatus !== "cancel_requested" && !showRefundForm && (
         <button onClick={toggleRsvp} disabled={working} className={`inline-flex justify-center rounded-full px-5 py-3.5 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${rsvped ? "mt-3 w-auto border-0 bg-transparent px-0 py-1 text-sm text-muted underline underline-offset-4 hover:text-ink" : "mt-6 w-full bg-teal text-white hover:bg-teal-d"}`}>
           {working ? labels.working : rsvped ? (isPaidRsvp ? labels.requestCancel : labels.cancel) : labels.rsvp}
         </button>
@@ -226,6 +228,10 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
           <p className="text-sm font-bold">{labels.refundEmailTitle}</p>
           <label className="text-sm text-muted">{labels.refundEmailLabel}</label>
           <input value={refundEmail} onChange={(event) => setRefundEmail(event.target.value)} placeholder={labels.refundEmailPlaceholder} type="email" className="w-full rounded-xl border border-line bg-white px-4 py-2 text-sm outline-none focus:border-teal" />
+          <div className="flex gap-2 pt-1">
+            <button onClick={toggleRsvp} disabled={working} className="flex-1 rounded-full bg-teal px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">{working ? labels.working : labels.confirmRefundRequest}</button>
+            <button onClick={() => setShowRefundForm(false)} disabled={working} className="rounded-full border border-line bg-white px-4 py-2.5 text-sm font-bold disabled:opacity-60">{labels.back}</button>
+          </div>
         </div>
       )}
       {rsvped && <p className="mt-3 text-center text-sm font-medium text-green-d">

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe } from "@/lib/stripe";
-import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail, sendPaymentReportedEmail } from "@/lib/brevo";
+import { getProfileEmailRecipient, sendBrevoEmail, sendPaymentConfirmedEmail, sendPaymentReportedEmail, sendRefundConfirmedEmail } from "@/lib/brevo";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -66,6 +66,24 @@ export async function POST(request: Request, { params }: Props) {
       await promoteNextWaitlisted(id);
     } catch (promoteError) {
       console.error("Waitlist promotion failed:", promoteError);
+    }
+    try {
+      const recipient = await getProfileEmailRecipient(rsvp.user_id);
+      const { data: attendeeProfile } = await supabase.from("profiles").select("etransfer_email").eq("id", rsvp.user_id).maybeSingle();
+      if (recipient) {
+        await sendRefundConfirmedEmail({
+          toEmail: recipient.email,
+          toName: recipient.name ?? "there",
+          eventTitle: eventInfo?.title ?? "NATEA event",
+          eventDate: eventInfo?.starts_at
+            ? new Date(eventInfo.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" })
+            : "",
+          amount: `$${(eventInfo?.price_cad ?? 0) * (1 + (rsvp.plus_ones ?? 0))} CAD`,
+          refundEmail: attendeeProfile?.etransfer_email ?? null,
+        });
+      }
+    } catch (emailError) {
+      console.error("Refund confirmed email failed:", emailError);
     }
   }
 

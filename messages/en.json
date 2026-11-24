@@ -452,6 +452,9 @@
       "cancel_requested": "Cancellation requested"
     },
     "rsvp": {
+      "refundEmailRequired": "Please enter the e-Transfer email for your refund.",
+      "confirmRefundRequest": "Send refund request",
+      "back": "Back",
       "rsvp": "RSVP",
       "cancel": "Cancel my RSVP",
       "working": "Updating…",

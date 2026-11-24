@@ -452,6 +452,9 @@
       "cancel_requested": "已申請取消"
     },
     "rsvp": {
+      "refundEmailRequired": "請輸入退款用的 e-Transfer Email。",
+      "confirmRefundRequest": "送出退款申請",
+      "back": "返回",
       "rsvp": "RSVP",
       "cancel": "取消 RSVP",
       "working": "更新中…",

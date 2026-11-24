@@ -493,3 +493,39 @@ export async function sendCancelConfirmationEmail({
 
   await sendBrevoEmail(`Your RSVP is cancelled: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
 }
+
+export async function sendRefundConfirmedEmail({
+  toEmail,
+  toName,
+  eventTitle,
+  eventDate,
+  amount,
+  refundEmail,
+}: {
+  toEmail: string;
+  toName: string;
+  eventTitle: string;
+  eventDate: string;
+  amount: string;
+  refundEmail: string | null;
+}) {
+  const html = `<div style="font-family: 'DM Sans', Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; color: #17202b;">
+  <div style="background: linear-gradient(135deg, #2ea6b5 0%, #7b2d8e 100%); padding: 32px 24px; text-align: center;">
+    <div style="display: inline-block; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 14px; color: #ffffff; font-size: 24px; font-weight: bold;">N</div>
+    <div style="color: #ffffff; font-size: 22px; font-weight: bold; letter-spacing: 1px; margin-top: 12px;">NATEA</div>
+    <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px;">TORONTO IT COMMUNITY</div>
+  </div>
+  <div style="padding: 32px 24px;">
+    <h2 style="font-size: 22px; margin: 0 0 16px; color: #17202b;">Your refund is on its way: ${eventTitle}</h2>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, the organizer has confirmed your refund of <strong>${amount}</strong> for <strong>${eventTitle}</strong> (${eventDate}).</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">The refund was sent by e-Transfer${refundEmail ? ` to <strong>${refundEmail}</strong>` : ""}. Please allow 1–2 business days for it to arrive, and check your spam folder if you don't see it.</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0;">Hope to see you at another NATEA event soon.</p>
+  </div>
+  <div style="border-top: 1px solid #eeeeee; padding: 20px 24px; text-align: center;">
+    <p style="font-size: 13px; color: #888888; margin: 0;">Learn together, in Toronto.</p>
+    <p style="font-size: 13px; color: #888888; margin: 8px 0 0;">— The NATEA team</p>
+  </div>
+</div>`;
+
+  await sendBrevoEmail(`Your refund is on its way: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
+}

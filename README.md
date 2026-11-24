@@ -103,6 +103,15 @@ NATEA uses **Interac e-Transfer only** — no card payments.
 
 ## Getting started
 
+You don't download the packages one by one — `npm install` does it for you, from `package.json`.
+
+### Prerequisites — what to download first
+
+The only thing to download manually is **Node.js**:
+
+- Download the **LTS** version from https://nodejs.org — that includes `npm` with it
+- You need Node **20 or newer** for Next.js 16
+- Check it worked:
 ```bash
-npm install
-npm run dev
+node -v
+npm -v

@@ -4,7 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getPublishedEvent } from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpButton } from "@/components/RsvpButton";
-import { PaymentButton } from "@/components/PaymentButton"; 
+import { PaymentButton } from "@/components/PaymentButton";
 import { CopyButton } from "@/components/CopyButton";
 import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { connection } from "next/server";
@@ -27,6 +27,7 @@ export default async function EventDetailPage({ params }: Props) {
   const { data: currentRsvp } = user
     ? await supabase.from("rsvps").select("id, payment_status, plus_ones, plus_one_name").eq("event_id", id).eq("user_id", user.id).neq("payment_status", "refunded").maybeSingle()
     : { data: null };
+  const { data: myProfile } = user ? await supabase.from("profiles").select("etransfer_email").eq("id", user.id).maybeSingle() : { data: null };
   const { data: waitlistEntry } = user
     ? await supabase.from("event_waitlist").select("id").eq("event_id", id).eq("user_id", user.id).maybeSingle()
     : { data: null };
@@ -37,11 +38,15 @@ export default async function EventDetailPage({ params }: Props) {
   const isOrganizer = Boolean(user && event.organizer_id === user.id);
   const canReviewPayments = Boolean(user && (viewerProfile?.role === "admin" || isOrganizer));
   const { data: paymentRows } = canReviewPayments
-    ? await supabase.from("rsvps").select("id, payment_status, paid_at, created_at, user_id, plus_ones, profiles(display_name, email, avatar_url)").eq("event_id", id)
+    ? await supabase.from("rsvps").select("id, payment_status, paid_at, created_at, user_id, plus_ones, profiles(display_name, email, avatar_url, etransfer_email)").eq("event_id", id)
     : { data: null };
   const pendingPayments = (paymentRows ?? []).filter((row) => row.payment_status === "pending" && row.user_id !== user?.id).map((row) => {
     const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
     return { rsvpId: row.id, displayName: profile?.display_name || t("paymentConfirmation.unknownAttendee"), email: profile?.email || "", amount: event.price_cad * (1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0)), dateSent: row.created_at };
+  });
+  const refundRequests = (paymentRows ?? []).filter((row) => row.payment_status === "cancel_requested" && row.user_id !== user?.id).map((row) => {
+    const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+    return { rsvpId: row.id, displayName: profile?.display_name || t("paymentConfirmation.unknownAttendee"), email: profile?.email || "", refundEmail: (profile as { etransfer_email?: string | null } | null)?.etransfer_email || "", amount: event.price_cad * (1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0)), dateSent: row.created_at };
   });
   const confirmedTotal = (paymentRows ?? []).filter((row) => row.payment_status === "paid" && row.user_id !== user?.id).reduce((sum, row) => sum + event.price_cad * (1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0)), 0);
 
@@ -120,7 +125,7 @@ export default async function EventDetailPage({ params }: Props) {
 
               <p className="mt-5 text-sm font-bold text-ink">{t("spots", { count: event.attendee_count, capacity: event.capacity })}</p>
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-teal" style={{ width: `${Math.min((event.attendee_count / event.capacity) * 100, 100)}%` }} /></div>
-              {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} isFull={isFull} isWaitlisted={isWaitlisted} labels={t.raw("rsvp") as never} />
+              {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} isFull={isFull} isWaitlisted={isWaitlisted} initialEtransferEmail={myProfile?.etransfer_email ?? null} labels={t.raw("rsvp") as never} />
                 : <Link href={`/login?redirect=/events/${id}`} className="mt-6 inline-flex w-full justify-center rounded-full bg-teal px-5 py-3.5 font-bold text-white">{t("loginToRsvp")}</Link>}
               {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "unpaid" && <div className="mt-6 space-y-4 border-t border-line pt-5">
                 <div className="rounded-2xl border border-line bg-white p-4">
@@ -199,7 +204,7 @@ export default async function EventDetailPage({ params }: Props) {
             </aside>
 
           </div>
-          {canReviewPayments && <div className="px-8 md:px-12"><PaymentConfirmationList eventId={id} pendingPayments={pendingPayments} confirmedTotal={confirmedTotal} labels={t.raw("organizerPayments") as never} /></div>}
+          {canReviewPayments && <div className="px-8 md:px-12"><PaymentConfirmationList eventId={id} pendingPayments={pendingPayments} refundRequests={refundRequests} confirmedTotal={confirmedTotal} labels={t.raw("organizerPayments") as never} /></div>}
           <div className="grid gap-6 border-t border-line p-8 md:grid-cols-2 lg:grid-cols-4 md:p-12">
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("organizer")}</h2><p className="mt-3 font-bold">{organizer?.display_name || t("organizerFallback")}</p>{event.price_cad > 0 && event.etransfer_email && <div className="mt-3 flex items-start gap-2 text-sm"><span className="min-w-0 break-all leading-5 text-muted">{event.etransfer_email}</span><CopyButton value={event.etransfer_email} label={t("copy")} copiedLabel={t("copied")} /></div>}<p className="mt-3 text-xs leading-5 text-muted">{t("organizerNote")}</p></section>
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("discuss")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("lineButton") === "Open Line" ? "Chat with other attendees in the NATEA Line group." : "在 NATEA Line 群組和其他參加者聊天。"}</p><a href="https://line.me/ti/g/M8agqVHJnT" target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center whitespace-nowrap rounded-full border border-teal bg-white px-5 py-3 text-sm font-bold text-teal-d">{t("lineButton")}</a>

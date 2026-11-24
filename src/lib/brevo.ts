@@ -331,3 +331,38 @@ export async function sendWaitlistPromotedEmail({
 
   await sendBrevoEmail(`You're in: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
 }
+
+export async function sendRefundRequestedEmail({
+  toEmail,
+  toName,
+  attendeeName,
+  attendeeEmail,
+  refundEmail,
+  eventTitle,
+  eventDate,
+  amount,
+  reviewUrl,
+}: {
+  toEmail: string;
+  toName: string;
+  attendeeName: string;
+  attendeeEmail: string;
+  refundEmail: string;
+  eventTitle: string;
+  eventDate: string;
+  amount: string;
+  reviewUrl: string;
+}) {
+  const html = `<div style="font-family: 'DM Sans', Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; color: #17202b;">
+  <div style="background: linear-gradient(135deg, #2ea6b5 0%, #7b2d8e 100%); padding: 32px 24px; text-align: center;">
+    <div style="color: #ffffff; font-size: 22px; font-weight: bold;">NATEA</div>
+  </div>
+  <div style="padding: 32px 24px;">
+    <h2 style="font-size: 22px; margin: 0 0 16px;">Refund requested: ${eventTitle}</h2>
+    <p style="font-size: 15px; line-height: 1.6;">Hi ${toName}, <strong>${attendeeName}</strong> (${attendeeEmail}) requested a refund of <strong>${amount}</strong> for <strong>${eventTitle}</strong> (${eventDate}).</p>
+    <p style="font-size: 15px; line-height: 1.6;">Please send the refund by e-Transfer to: <strong>${refundEmail}</strong></p>
+    <p style="margin: 28px 0; text-align: center;"><a href="${reviewUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">Review refund</a></p>
+  </div>
+</div>`;
+  await sendBrevoEmail(`Refund requested: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
+}

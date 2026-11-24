@@ -11,9 +11,19 @@ type PendingPayment = {
   dateSent: string | null;
 };
 
+type RefundRequest = {
+  rsvpId: string;
+  displayName: string;
+  email: string;
+  refundEmail: string;
+  amount: number;
+  dateSent: string | null;
+};
+
 type Props = {
   eventId: string;
   pendingPayments: PendingPayment[];
+  refundRequests?: RefundRequest[];
   confirmedTotal: number;
   labels: {
     title: string;
@@ -28,10 +38,13 @@ type Props = {
     dateSent: string;
     copy: string;
     copied: string;
+    refundTitle: string;
+    refundEmail: string;
+    refund: string;
   };
 };
 
-export function PaymentConfirmationList({ eventId, pendingPayments, confirmedTotal, labels }: Props) {
+export function PaymentConfirmationList({ eventId, pendingPayments, refundRequests = [], confirmedTotal, labels }: Props) {
   return (
     <section className="mt-10 rounded-2xl border border-line bg-bg2 p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -50,6 +63,25 @@ export function PaymentConfirmationList({ eventId, pendingPayments, confirmedTot
           </div>
         )) : <p className="text-sm text-muted">{labels.empty}</p>}
       </div>
+      {refundRequests.length > 0 && (
+        <div className="mt-8 border-t border-line pt-5">
+          <h3 className="display text-xl font-extrabold">{labels.refundTitle}</h3>
+          <div className="mt-4 grid gap-3">
+            {refundRequests.map((request) => (
+              <div key={request.rsvpId} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-card p-4">
+                <div>
+                  <p className="font-bold">{request.displayName}</p>
+                  <p className="mt-1 text-sm text-muted">{request.email}</p>
+                  <p className="mt-1 text-sm font-bold text-ink">{labels.refundEmail}: {request.refundEmail}</p>
+                  {request.refundEmail && <CopyButton value={request.refundEmail} label={labels.copy} copiedLabel={labels.copied} />}
+                  <p className="mt-1 text-sm font-bold text-ink">${request.amount} CAD</p>
+                </div>
+                <PaymentButton eventId={eventId} rsvpId={request.rsvpId} action="refund" label={labels.refund} working={labels.working} error={labels.error} success={labels.updated} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

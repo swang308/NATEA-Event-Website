@@ -12,6 +12,7 @@ type Props = {
   initialPlusOneName?: string | null;
   isFull?: boolean;
   isWaitlisted?: boolean;
+  initialEtransferEmail?: string | null;
   labels: {
     rsvp: string;
     cancel: string;
@@ -37,10 +38,14 @@ type Props = {
     joinWaitlist: string;
     leaveWaitlist: string;
     onWaitlist: string;
+    refundEmailTitle: string;
+    refundEmailLabel: string;
+    refundEmailPlaceholder: string;
+    refundEmailRequired: string;
   };
 };
 
-export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, isFull = false, isWaitlisted = false, labels }: Props) {
+export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, isFull = false, isWaitlisted = false, initialEtransferEmail = null, labels }: Props) {
   const router = useRouter();
   const [rsvped, setRsvped] = useState(isRsvped);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(paymentStatus);
@@ -51,6 +56,8 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
   const [error, setError] = useState("");
   const [working, setWorking] = useState(false);
   const [waitlisted, setWaitlisted] = useState(isWaitlisted);
+  const [showRefundForm, setShowRefundForm] = useState(false);
+  const [refundEmail, setRefundEmail] = useState(initialEtransferEmail ?? "");
 
   const isPaidRsvp = currentPaymentStatus === "paid" || currentPaymentStatus === "pending";
 
@@ -101,18 +108,22 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
   async function toggleRsvp() {
     setError("");
     if (rsvped) {
-      if (!window.confirm(isPaidRsvp ? labels.cancelPaidConfirm : labels.cancelConfirm)) return;
+      if (isPaidRsvp) {
+        if (!showRefundForm) { setShowRefundForm(true); return; }
+        if (!refundEmail.trim() || !refundEmail.includes("@")) { setError(labels.refundEmailRequired); return; }
+      } else if (!window.confirm(labels.cancelConfirm)) return;
       setWorking(true);
       try {
         const response = await fetch(`/api/events/${eventId}/rsvp`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "request-cancel" }),
+          body: JSON.stringify({ action: "request-cancel", etransfer_email: isPaidRsvp ? refundEmail.trim() : undefined }),
         });
         const result = await response.json() as { error?: string; requested?: boolean };
         if (!response.ok) throw new Error(result.error || labels.error);
         if (result.requested) {
           setCurrentPaymentStatus("cancel_requested");
+          setShowRefundForm(false);
         } else {
           setRsvped(false);
         }
@@ -209,6 +220,13 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
         <button onClick={toggleRsvp} disabled={working} className={`inline-flex justify-center rounded-full px-5 py-3.5 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${rsvped ? "mt-3 w-auto border-0 bg-transparent px-0 py-1 text-sm text-muted underline underline-offset-4 hover:text-ink" : "mt-6 w-full bg-teal text-white hover:bg-teal-d"}`}>
           {working ? labels.working : rsvped ? (isPaidRsvp ? labels.requestCancel : labels.cancel) : labels.rsvp}
         </button>
+      )}
+      {showRefundForm && isPaidRsvp && (
+        <div className="mt-3 space-y-2 rounded-xl border border-line bg-bg2 p-4">
+          <p className="text-sm font-bold">{labels.refundEmailTitle}</p>
+          <label className="text-sm text-muted">{labels.refundEmailLabel}</label>
+          <input value={refundEmail} onChange={(event) => setRefundEmail(event.target.value)} placeholder={labels.refundEmailPlaceholder} type="email" className="w-full rounded-xl border border-line bg-white px-4 py-2 text-sm outline-none focus:border-teal" />
+        </div>
       )}
       {rsvped && <p className="mt-3 text-center text-sm font-medium text-green-d">
         {currentPaymentStatus === "free" ? labels.free : currentPaymentStatus === "paid" ? labels.paid : currentPaymentStatus === "refunded" ? labels.refunded : currentPaymentStatus === "pending" ? labels.pending : currentPaymentStatus === "cancel_requested" ? labels.cancelRequested : labels.unpaid}

@@ -122,7 +122,7 @@ export default async function EventDetailPage({ params }: Props) {
               {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} isFull={isFull} isWaitlisted={isWaitlisted} initialEtransferEmail={myProfile?.etransfer_email ?? null} labels={t.raw("rsvp") as never} />
                 : <Link href={`/login?redirect=/events/${id}`} className="mt-6 inline-flex w-full justify-center rounded-full bg-teal px-5 py-3.5 font-bold text-white">{t("loginToRsvp")}</Link>}
               {canEdit && (
-                <Link href={`/${locale}/events/${id}/edit`} className="mt-4 inline-flex w-full justify-center rounded-full border border-teal bg-white px-5 py-3 font-bold text-teal-d">
+                <Link href={`/events/${id}/edit`} className="mt-4 inline-flex w-full justify-center rounded-full border border-teal bg-white px-5 py-3 font-bold text-teal-d">
                   Edit event
                 </Link>
               )}

@@ -52,7 +52,14 @@ export async function POST(request: Request, { params }: Props) {
     return NextResponse.json({ error: "This event is not available for RSVP." }, { status: 400 });
   }
 
-  const { data: existingRsvps } = await supabase
+  // Count with the admin client (bypasses RLS) so the count sees ALL
+  // RSVPs, not just the current user's own rows — otherwise a full
+  // event looks empty and overbooks.
+  const adminClient = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { data: existingRsvps } = await adminClient
     .from("rsvps")
     .select("plus_ones, payment_status")
     .eq("event_id", id)
@@ -82,10 +89,6 @@ export async function POST(request: Request, { params }: Props) {
       .select("email, display_name")
       .eq("id", user.id)
       .maybeSingle();
-    const adminClient = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
     const { data: organizerProfile } = await adminClient
       .from("profiles")
       .select("email, etransfer_email")

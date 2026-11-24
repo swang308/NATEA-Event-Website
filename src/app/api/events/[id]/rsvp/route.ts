@@ -1,10 +1,28 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { sendRsvpConfirmationEmail } from "@/lib/brevo";
+import { sendRsvpConfirmationEmail, sendRefundRequestedEmail, sendRsvpCancelledEmail } from "@/lib/brevo";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { sendRefundRequestedEmail } from "@/lib/brevo";
 
 type Props = { params: Promise<{ id: string }> };
+
+async function notifyOrganizerOfCancel(eventId: string, userId: string, userEmail: string | null, wasPaid: boolean) {
+  try {
+    const adminClient = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    const { data: event } = await adminClient.from("events").select("title, organizer_id, starts_at").eq("id", eventId).single();
+    const { data: attendee } = await adminClient.from("profiles").select("display_name").eq("id", userId).maybeSingle();
+    const { data: organizer } = await adminClient.from("profiles").select("email, display_name").eq("id", event?.organizer_id).maybeSingle();
+    if (event && organizer?.email) {
+      await sendRsvpCancelledEmail({
+        toEmail: organizer.email, toName: organizer.display_name ?? "there",
+        attendeeName: attendee?.display_name ?? "An attendee",
+        eventTitle: event.title,
+        eventDate: new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }),
+        wasPaid,
+        eventUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/events/${eventId}`,
+      });
+    }
+  } catch (emailError) { console.error("RSVP cancelled email failed:", emailError); }
+}
 
 export async function POST(request: Request, { params }: Props) {
   const { id } = await params;
@@ -112,40 +130,44 @@ export async function PATCH(request: Request, { params }: Props) {
   // Edit guest name — no cancel, no payment change
   if (body.action === "update-guest") {
     if (rsvp.plus_ones !== 1) return NextResponse.json({ error: "No guest on this RSVP." }, { status: 400 });
-    if (rsvp.payment_status === "paid" || rsvp.payment_status === "pending") {
-      const refundEmail = typeof body.etransfer_email === "string" ? body.etransfer_email.trim() : "";
-      if (!refundEmail || !refundEmail.includes("@")) return NextResponse.json({ error: "Please enter the e-Transfer email for your refund." }, { status: 400 });
-      await supabase.from("profiles").update({ etransfer_email: refundEmail }).eq("id", user.id);
-      const { error } = await supabase.from("rsvps").update({ payment_status: "cancel_requested" }).eq("event_id", id).eq("user_id", user.id);
-      if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-      try {
-        const adminClient = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-        const { data: event } = await adminClient.from("events").select("title, organizer_id, price_cad, starts_at").eq("id", id).single();
-        const { data: attendee } = await adminClient.from("profiles").select("email, display_name").eq("id", user.id).maybeSingle();
-        const { data: organizer } = await adminClient.from("profiles").select("email, display_name").eq("id", event?.organizer_id).maybeSingle();
-        if (event && organizer?.email) {
-          await sendRefundRequestedEmail({
-            toEmail: organizer.email, toName: organizer.display_name ?? "there",
-            attendeeName: attendee?.display_name ?? "An attendee", attendeeEmail: attendee?.email ?? user.email ?? "",
-            refundEmail, eventTitle: event.title,
-            eventDate: new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }),
-            amount: `$${event.price_cad * (1 + (rsvp.plus_ones ?? 0))} CAD`,
-            reviewUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/my-events`,
-          });
-        }
-      } catch (emailError) { console.error("Refund requested email failed:", emailError); }
-      return NextResponse.json({ ok: true, requested: true });
-    }
+    if (rsvp.payment_status === "refunded") return NextResponse.json({ error: "This RSVP was refunded." }, { status: 400 });
+    const guestName = typeof body.plus_one_name === "string" ? body.plus_one_name.trim() || null : null;
+    const { error } = await supabase
+      .from("rsvps")
+      .update({ plus_one_name: guestName })
+      .eq("event_id", id)
+      .eq("user_id", user.id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true });
   }
 
   // Paid / pending: don't delete — mark as cancel requested, host confirms + refunds
   if (rsvp.payment_status === "paid" || rsvp.payment_status === "pending") {
+    const refundEmail = typeof body.etransfer_email === "string" ? body.etransfer_email.trim() : "";
+    if (!refundEmail || !refundEmail.includes("@")) return NextResponse.json({ error: "Please enter the e-Transfer email for your refund." }, { status: 400 });
+    await supabase.from("profiles").update({ etransfer_email: refundEmail }).eq("id", user.id);
     const { error } = await supabase
       .from("rsvps")
       .update({ payment_status: "cancel_requested" })
       .eq("event_id", id)
       .eq("user_id", user.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    try {
+      const adminClient = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+      const { data: event } = await adminClient.from("events").select("title, organizer_id, price_cad, starts_at").eq("id", id).single();
+      const { data: attendee } = await adminClient.from("profiles").select("email, display_name").eq("id", user.id).maybeSingle();
+      const { data: organizer } = await adminClient.from("profiles").select("email, display_name").eq("id", event?.organizer_id).maybeSingle();
+      if (event && organizer?.email) {
+        await sendRefundRequestedEmail({
+          toEmail: organizer.email, toName: organizer.display_name ?? "there",
+          attendeeName: attendee?.display_name ?? "An attendee", attendeeEmail: attendee?.email ?? user.email ?? "",
+          refundEmail, eventTitle: event.title,
+          eventDate: new Date(event.starts_at).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }),
+          amount: `$${event.price_cad * (1 + (rsvp.plus_ones ?? 0))} CAD`,
+          reviewUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/en/my-events`,
+        });
+      }
+    } catch (emailError) { console.error("Refund requested email failed:", emailError); }
     return NextResponse.json({ ok: true, requested: true });
   }
 
@@ -158,6 +180,7 @@ export async function PATCH(request: Request, { params }: Props) {
   } catch (promoteError) {
     console.error("Waitlist promotion failed:", promoteError);
   }
+  await notifyOrganizerOfCancel(id, user.id, user.email ?? null, false);
   return NextResponse.json({ ok: true });
 }
 
@@ -176,5 +199,6 @@ export async function DELETE(_request: Request, { params }: Props) {
   } catch (promoteError) {
     console.error("Waitlist promotion failed:", promoteError);
   }
+  await notifyOrganizerOfCancel(id, user.id, user.email ?? null, false);
   return NextResponse.json({ ok: true });
 }

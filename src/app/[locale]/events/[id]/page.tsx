@@ -4,8 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getPublishedEvent } from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
 import { RsvpButton } from "@/components/RsvpButton";
-// import PayByCardButton from "@/components/PayByCardButton";
-import { PaymentButton } from "@/components/PaymentButton"; # e - transfer
+import { PaymentButton } from "@/components/PaymentButton"; 
 import { CopyButton } from "@/components/CopyButton";
 import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { connection } from "next/server";

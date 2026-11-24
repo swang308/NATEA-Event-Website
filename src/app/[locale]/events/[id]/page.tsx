@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { RsvpButton } from "@/components/RsvpButton";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CopyButton } from "@/components/CopyButton";
-import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { connection } from "next/server";
 
 export const instant = false;
@@ -23,7 +22,6 @@ export default async function EventDetailPage({ params }: Props) {
   if (!event) notFound();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const { data: viewerProfile } = user ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle() : { data: null };
   const { data: currentRsvp } = user
     ? await supabase.from("rsvps").select("id, payment_status, plus_ones, plus_one_name").eq("event_id", id).eq("user_id", user.id).neq("payment_status", "refunded").maybeSingle()
     : { data: null };
@@ -36,19 +34,6 @@ export default async function EventDetailPage({ params }: Props) {
   const { data: attendees } = await supabase.from("public_event_attendees").select("display_name, avatar_url, avatar_emoji, payment_status, plus_ones, plus_one_name").eq("event_id", id).order("display_name");
   const { data: organizer } = await supabase.from("public_event_organizers").select("display_name, avatar_url").eq("event_id", id).maybeSingle();
   const isOrganizer = Boolean(user && event.organizer_id === user.id);
-  const canReviewPayments = Boolean(user && (viewerProfile?.role === "admin" || isOrganizer));
-  const { data: paymentRows } = canReviewPayments
-    ? await supabase.from("rsvps").select("id, payment_status, paid_at, created_at, user_id, plus_ones, profiles(display_name, email, avatar_url, etransfer_email)").eq("event_id", id)
-    : { data: null };
-  const pendingPayments = (paymentRows ?? []).filter((row) => row.payment_status === "pending" && row.user_id !== user?.id).map((row) => {
-    const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
-    return { rsvpId: row.id, displayName: profile?.display_name || t("paymentConfirmation.unknownAttendee"), email: profile?.email || "", amount: event.price_cad * (1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0)), dateSent: row.created_at };
-  });
-  const refundRequests = (paymentRows ?? []).filter((row) => row.payment_status === "cancel_requested" && row.user_id !== user?.id).map((row) => {
-    const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
-    return { rsvpId: row.id, displayName: profile?.display_name || t("paymentConfirmation.unknownAttendee"), email: profile?.email || "", refundEmail: (profile as { etransfer_email?: string | null } | null)?.etransfer_email || "", amount: event.price_cad * (1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0)), dateSent: row.created_at };
-  });
-  const confirmedTotal = (paymentRows ?? []).filter((row) => row.payment_status === "paid" && row.user_id !== user?.id).reduce((sum, row) => sum + event.price_cad * (1 + ((row as { plus_ones?: number | null }).plus_ones ?? 0)), 0);
 
   const date = new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", {
     timeZone: "America/Toronto",
@@ -204,7 +189,6 @@ export default async function EventDetailPage({ params }: Props) {
             </aside>
 
           </div>
-          {canReviewPayments && <div className="px-8 md:px-12"><PaymentConfirmationList eventId={id} pendingPayments={pendingPayments} refundRequests={refundRequests} confirmedTotal={confirmedTotal} labels={t.raw("organizerPayments") as never} /></div>}
           <div className="grid gap-6 border-t border-line p-8 md:grid-cols-2 lg:grid-cols-4 md:p-12">
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("organizer")}</h2><p className="mt-3 font-bold">{organizer?.display_name || t("organizerFallback")}</p>{event.price_cad > 0 && event.etransfer_email && <div className="mt-3 flex items-start gap-2 text-sm"><span className="min-w-0 break-all leading-5 text-muted">{event.etransfer_email}</span><CopyButton value={event.etransfer_email} label={t("copy")} copiedLabel={t("copied")} /></div>}<p className="mt-3 text-xs leading-5 text-muted">{t("organizerNote")}</p></section>
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("discuss")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("lineButton") === "Open Line" ? "Chat with other attendees in the NATEA Line group." : "在 NATEA Line 群組和其他參加者聊天。"}</p><a href="https://line.me/ti/g/M8agqVHJnT" target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center whitespace-nowrap rounded-full border border-teal bg-white px-5 py-3 text-sm font-bold text-teal-d">{t("lineButton")}</a>

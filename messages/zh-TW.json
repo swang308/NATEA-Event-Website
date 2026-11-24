@@ -50,7 +50,7 @@
       "title": "付款方式",
       "steps": [
         "選擇活動並 RSVP",
-        "用信用卡付款 — 馬上確認你的名額",
+        "以 e-Transfer 付款 — 寄送 $40 給主辦人，然後點「我已寄出」",
         "完成！"
       ]
     },
@@ -406,7 +406,7 @@
     "noAttendees": "目前還沒有人 RSVP。",
     "organizer": "主辦人",
     "organizerFallback": "NATEA 主辦人",
-    "organizerNote": "請使用信用卡安全付款。",
+    "organizerNote": "請以 e-Transfer 付款給主辦人。",
     "youAreOrganizer": "你是主辦人",
     "copy": "複製",
     "copied": "已複製",

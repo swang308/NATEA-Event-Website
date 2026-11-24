@@ -50,7 +50,7 @@
       "title": "How payment works",
       "steps": [
         "Choose an event and RSVP",
-        "Pay by card — your spot is confirmed right away",
+        "Pay by e-Transfer — send $40 to the organizer, then click “I've sent it”",
         "You're all set"
       ]
     },
@@ -406,7 +406,7 @@
     "noAttendees": "No one has RSVP’d yet.",
     "organizer": "Organizer",
     "organizerFallback": "NATEA organizer",
-    "organizerNote": "Payment is made securely by card.",
+    "organizerNote": "Payment is made by e-Transfer to the organizer.",
     "youAreOrganizer": "You are the organizer",
     "copy": "Copy",
     "copied": "Copied",

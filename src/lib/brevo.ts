@@ -98,6 +98,7 @@ export async function sendRsvpConfirmationEmail({
   totalCents,
   guestName,
   etransferEmail,
+  deadline,
 }: {
   toEmail: string;
   toName: string;
@@ -108,11 +109,12 @@ export async function sendRsvpConfirmationEmail({
   totalCents: number;
   guestName: string | null;
   etransferEmail: string | null;
+  deadline: string | null;
 }) {
   const total = `$${(totalCents / 100).toFixed(2)} CAD`;
   const isPaidEvent = totalCents > 0;
   const paymentBlock = isPaidEvent
-    ? `<p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">Please send <strong>${total}</strong> by e-Transfer to <strong>${etransferEmail ?? "the organizer"}</strong>.</p>
+    ? `<p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">Please send <strong>${total}</strong> by e-Transfer to <strong>${etransferEmail ?? "the organizer"}</strong>${deadline ? ` by <strong>${deadline}</strong>` : ""}.</p>
        <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">After you send it, go to My Events and click "I've sent it" so the organizer can confirm your payment.</p>`
     : `<p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">This event is free — no payment needed.</p>`;
   const guestBlock = guestName

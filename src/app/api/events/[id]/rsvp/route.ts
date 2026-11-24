@@ -37,7 +37,7 @@ export async function POST(request: Request, { params }: Props) {
 
   const { data: event, error: eventError } = await supabase
     .from("events")
-    .select("id, title, location, location_type, organizer_id, price_cad, status, starts_at, capacity")
+    .select("id, title, location, location_type, organizer_id, price_cad, status, starts_at, capacity, payment_deadline")
     .eq("id", id)
     .eq("status", "published")
     .single();
@@ -97,7 +97,7 @@ export async function POST(request: Request, { params }: Props) {
         totalCents: event.price_cad * 100 * (1 + plusOnes),
         guestName: plusOnes > 0 ? plusOneName : null,
         etransferEmail: organizerProfile?.etransfer_email ?? organizerProfile?.email ?? null,
-
+        deadline: event.payment_deadline ? new Date(event.payment_deadline).toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" }) : null,
       });
     }
   } catch (emailError) {

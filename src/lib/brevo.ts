@@ -529,3 +529,27 @@ export async function sendRefundConfirmedEmail({
 
   await sendBrevoEmail(`Your refund is on its way: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
 }
+export async function sendCohostInviteEmail({
+  to,
+  eventTitle,
+  eventDate,
+  organizerName,
+  acceptUrl,
+}: {
+  to: string;
+  eventTitle: string;
+  eventDate: string;
+  organizerName: string;
+  acceptUrl: string;
+}) {
+  const subject = `You're invited to co-host ${eventTitle} on NATEA`;
+  const html = `
+    <p>Hi,</p>
+    <p><strong>${organizerName}</strong> invited you to co-host <strong>${eventTitle}</strong> (${eventDate}) on NATEA.</p>
+    <p>As a co-host, you can edit the event details. Only the creator collects payments and confirms them.</p>
+    <p><a href="${acceptUrl}" style="display:inline-block;padding:12px 24px;background:#2ea6b5;color:#fff;border-radius:999px;text-decoration:none;font-weight:bold;">Accept co-host invite</a></p>
+    <p>Or copy this link into your browser:<br>${acceptUrl}</p>
+    <p>— NATEA</p>
+  `;
+  await sendBrevoEmail(subject, [{ email: to }], html);
+}

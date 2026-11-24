@@ -32,7 +32,7 @@ export default async function NewEventPage({ params }: Props) {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   return (
-    <main className="min-h-screen bg-bg2 py-10"><section className="mx-auto w-full max-w-2xl rounded-2xl border border-line bg-card p-8 shadow-sm md:p-12">
+    <main className="min-h-screen bg-bg2 px-4 py-10 sm:px-6"><section className="mx-auto w-full max-w-2xl rounded-2xl border border-line bg-card p-8 shadow-sm md:p-12">
       <Link href="/" className="flex items-center gap-3">
         <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
         <span className="display text-xl font-extrabold tracking-tight">NATEA</span>

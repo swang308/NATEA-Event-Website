@@ -62,7 +62,7 @@ export default async function EditEventPage({ params }: Props) {
     ? toTorontoInput(event.ends_at)
     : toTorontoInput(new Date(new Date(event.starts_at).getTime() + 2 * 60 * 60 * 1000));
   const localDeadline = event.payment_deadline ? toTorontoInput(event.payment_deadline) : null;
-  return <main className="min-h-screen bg-bg2 py-10"><section className="mx-auto w-full max-w-2xl rounded-2xl border border-line bg-card p-8 md:p-12"><Link href="/" className="flex items-center gap-3">
+  return <main className="min-h-screen bg-bg2 px-4 py-10 sm:px-6"><section className="mx-auto w-full max-w-2xl rounded-2xl border border-line bg-card p-8 md:p-12"><Link href="/" className="flex items-center gap-3">
     <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
     <span className="display text-xl font-extrabold tracking-tight">NATEA</span>
   </Link>

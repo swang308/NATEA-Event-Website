@@ -20,18 +20,19 @@ export async function GET(request: Props["request"]) {
     return NextResponse.redirect(new URL(`/${locale}/login?error=oauth_callback`, url.origin));
   }
 
-  // New user? Send them to complete their profile.
-  // Returning users (profile already has a display name) go home / next.
+  // New Google sign-up? Send them to complete their profile.
+  // First login: created_at and last_sign_in_at are within ~2 minutes of each other.
+  // Returning login: last_sign_in_at is well after created_at.
   if (!next) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", user.id)
-        .maybeSingle();
+      const createdAt = user.created_at ? new Date(user.created_at).getTime() : 0;
+      const lastSignIn = user.last_sign_in_at ? new Date(user.last_sign_in_at).getTime() : 0;
+      const isNewUser =
+        Date.now() - createdAt < 10 * 60 * 1000 &&
+        Math.abs(lastSignIn - createdAt) < 2 * 60 * 1000;
 
-      if (!profile?.display_name) {
+      if (isNewUser) {
         return NextResponse.redirect(new URL(`/${locale}/profile`, url.origin));
       }
     }

@@ -12,6 +12,8 @@ type Props = {
   initialPlusOneName?: string | null;
   initialEtransferEmail?: string | null;
   showStatus?: boolean;
+  isFull?: boolean;
+  isWaitlisted?: boolean;
   labels: {
     rsvp: string;
     cancel: string;
@@ -39,8 +41,7 @@ type Props = {
     back: string;
   };
 };
-
-export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, initialEtransferEmail = null, showStatus = true, labels }: Props) {
+export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, initialEtransferEmail = null, isFull = false, isWaitlisted = false, showStatus = true, labels }: Props) {
   const router = useRouter();
   const [rsvped, setRsvped] = useState(isRsvped);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(paymentStatus);
@@ -140,7 +141,33 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
         </div>
       )}
 
-      {showRefundForm ? (
+      {!rsvped && isFull && !isWaitlisted && (
+        <button
+          onClick={async () => {
+            setWorking(true);
+            try {
+              const response = await fetch(`/api/events/${eventId}/waitlist`, { method: "POST" });
+              const result = await response.json() as { error?: string };
+              if (!response.ok) throw new Error(result.error || labels.error);
+              router.refresh();
+            } catch (caughtError) {
+              setError(caughtError instanceof Error ? caughtError.message : labels.error);
+            } finally {
+              setWorking(false);
+            }
+          }}
+          disabled={working}
+          className="mt-6 inline-flex w-full justify-center rounded-full bg-purple px-5 py-3.5 font-bold text-white disabled:opacity-60"
+        >
+          {working ? labels.working : ((labels as any).joinWaitlist ?? "Join waitlist")}
+        </button>
+      )}
+      {!rsvped && isWaitlisted && (
+        <p className="mt-3 text-center text-sm font-medium text-muted">
+          {(labels as any).waitlisted ?? "You're on the waitlist"}
+        </p>
+      )}
+      {!(!rsvped && isFull) && (showRefundForm ? (
         <div className="mt-3 space-y-3 rounded-xl border border-line bg-bg2 p-4">
           <p className="text-sm font-bold">{labels.refundEmailTitle}</p>
           <label className="block text-sm text-muted">{labels.refundEmailLabel}</label>
@@ -164,7 +191,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
         <button onClick={toggleRsvp} disabled={working} className={`inline-flex justify-center rounded-full px-5 py-3.5 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${rsvped ? "mt-3 w-auto border-0 bg-transparent px-0 py-1 text-sm text-muted underline underline-offset-4 hover:text-ink" : "mt-6 w-full bg-teal text-white hover:bg-teal-d"}`}>
           {working ? labels.working : rsvped ? (isPaidRsvp ? labels.requestCancel : labels.cancel) : labels.rsvp}
         </button>
-      )}
+      ))}
       {showStatus && rsvped && <p className="mt-3 text-center text-sm font-medium text-green-d">
         {currentPaymentStatus === "free" ? labels.free : currentPaymentStatus === "paid" ? labels.paid : currentPaymentStatus === "refunded" ? labels.refunded : currentPaymentStatus === "pending" ? labels.pending : currentPaymentStatus === "cancel_requested" ? labels.cancelRequested : labels.unpaid}
       </p>}

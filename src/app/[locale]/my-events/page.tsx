@@ -140,6 +140,7 @@ export default async function MyEventsPage({ params }: Props) {
               initialPlusOnes={(rsvp as { plus_ones?: number | null }).plus_ones ?? 0}
               initialPlusOneName={(rsvp as { plus_one_name?: string | null }).plus_one_name ?? null}
               initialEtransferEmail={(profile as { etransfer_email?: string | null })?.etransfer_email ?? null}
+              showStatus={false}
               labels={tEventDetail.raw("rsvp") as never}
             />
           </div>

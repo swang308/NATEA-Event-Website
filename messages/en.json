@@ -425,6 +425,18 @@
     "payByCardWorking": "Redirecting to secure checkout…",
     "payByCardError": "Could not start card payment. Please try again.",
     "downloadIcs": "Download .ics file",
+    "payByEtransferTitle": "Pay by e-Transfer",
+    "payment": {
+      "instructions": "Please send {amount} by e-Transfer to {email}.",
+      "deadline": "Payment deadline: {date}",
+      "overdue": "The payment deadline has passed.",
+      "markSent": "I've sent it",
+      "working": "Sending…",
+      "error": "Something went wrong. Please try again.",
+      "sentConfirmation": "Thanks! The organizer will confirm your payment.",
+      "confirmation": "Have you sent the e-Transfer?",
+      "emailMissing": "the organizer"
+    },
     "statuses": {
       "paid": "Paid",
       "pending": "Pending",

@@ -425,6 +425,18 @@
     "payByCardWorking": "正在前往安全結帳…",
     "payByCardError": "無法開始信用卡付款，請再試一次。",
     "downloadIcs": "下載 .ics 檔案",
+    "payByEtransferTitle": "以 e-Transfer 付款",
+    "payment": {
+      "instructions": "請以 e-Transfer 寄送 {amount} 至 {email}。",
+      "deadline": "付款截止日期：{date}",
+      "overdue": "付款截止日期已過。",
+      "markSent": "我已寄出",
+      "working": "傳送中…",
+      "error": "發生錯誤，請再試一次。",
+      "sentConfirmation": "謝謝！主辦人將確認你的付款。",
+      "confirmation": "你已經寄出 e-Transfer 了嗎？",
+      "emailMissing": "主辦人"
+    },
     "statuses": {
       "paid": "已付款",
       "pending": "等待確認",

@@ -5,7 +5,7 @@ export function SiteFooter({ locale }: { locale: string }) {
     <footer className="border-t border-line bg-card py-10">
       <div className="container flex flex-wrap items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-3">
-          <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
+          <img src="/natea-logo.svg" alt="NATEA" className="h-10 w-10" />
           <span className="display text-xl font-extrabold tracking-tight">NATEA</span>
         </Link>
         <p className="text-sm text-muted">{locale === "zh-TW" ? "在多倫多，一起學習。" : "Learn together, in Toronto."}</p>

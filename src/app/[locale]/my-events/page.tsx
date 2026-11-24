@@ -8,6 +8,7 @@ import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { CopyButton } from "@/components/CopyButton";
 import { GuestNameEditor } from "@/components/GuestNameEditor";
 import { RsvpButton } from "@/components/RsvpButton";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -36,14 +37,17 @@ export default async function MyEventsPage({ params }: Props) {
   const isAdmin = profile?.role === "admin";
   let hostedEvents = hostedEventsResult.data ?? [];
   // Also include events where this user is an accepted co-host
-  const { data: cohostRows } = await supabase
+  // Use the admin client here, like the event detail page does,
+  // so RLS on event_cohosts can't hide the row from My Events.
+  const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const { data: cohostRows } = await admin
     .from("event_cohosts")
     .select("event_id")
     .eq("user_id", user.id)
     .eq("status", "accepted");
   const cohostEventIds = (cohostRows ?? []).map((r) => r.event_id).filter((id) => !hostedEvents.some((e) => e.id === id));
   if (cohostEventIds.length) {
-    const { data: cohostEvents } = await supabase
+    const { data: cohostEvents } = await admin
       .from("events")
       .select("id, title, starts_at, location, status, price_cad, organizer_id")
       .in("id", cohostEventIds);

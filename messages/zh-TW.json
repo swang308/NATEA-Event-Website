@@ -150,6 +150,7 @@
       }
     },
     "myEvents": {
+      "paymentConfirmation": "你確定已經寄出 e-Transfer 了嗎？主辦人會確認你的付款。",
       "payByEtransferTitle": "以 e-Transfer 付款",
       "paymentInstructions": "請以 e-Transfer 寄送 {amount} 給 {email}。寄出後，請點下面的「我已寄出」。",
       "paymentDeadline": "付款期限：{date}",

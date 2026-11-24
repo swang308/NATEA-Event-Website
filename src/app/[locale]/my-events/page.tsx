@@ -7,6 +7,7 @@ import { PaymentButton } from "@/components/PaymentButton";
 import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { CopyButton } from "@/components/CopyButton";
 import { GuestNameEditor } from "@/components/GuestNameEditor";
+import { RsvpButton } from "@/components/RsvpButton";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -20,13 +21,14 @@ export default async function MyEventsPage({ params }: Props) {
   const now = new Date();
   setRequestLocale(locale);
   const t = await getTranslations("Routes.myEvents");
+  const tEventDetail = await getTranslations("EventDetail");
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) return <main className="grid min-h-screen place-items-center bg-bg2 px-5"><section className="w-full max-w-xl rounded-2xl border border-line bg-card p-8 text-center shadow-sm"><h1 className="display text-4xl font-extrabold">{t("title")}</h1><p className="mt-4 text-muted">{t("loginRequired")}</p><Link href="/login" className="mt-8 inline-flex rounded-full bg-teal px-6 py-3.5 font-bold text-white">{t("login")}</Link></section></main>;
 
   const [profileResult, hostedEventsResult, rsvpsResult] = await Promise.all([
-    supabase.from("profiles").select("display_name, email, role").eq("id", user.id).single(),
+    supabase.from("profiles").select("display_name, email, role, etransfer_email").eq("id", user.id).single(),
     supabase.from("events").select("id, title, starts_at, location, status, price_cad").eq("organizer_id", user.id).order("starts_at", { ascending: true }),
     supabase.from("rsvps").select("id, event_id, payment_status, plus_ones, plus_one_name, events(title, starts_at, location, price_cad, etransfer_email, payment_deadline)").eq("user_id", user.id).order("created_at", { ascending: false }),
   ]);
@@ -128,6 +130,19 @@ export default async function MyEventsPage({ params }: Props) {
               error: t("error"),
             }}
           />
+        )}{rsvp.payment_status !== "cancel_requested" && (
+          <div className="mt-3">
+            <RsvpButton
+              eventId={rsvp.event_id}
+              isRsvped={true}
+              paymentStatus={rsvp.payment_status as "free" | "unpaid" | "pending" | "paid" | "refunded" | "cancel_requested" | null}
+              priceCents={(eventInfo?.price_cad ?? 0) * 100}
+              initialPlusOnes={(rsvp as { plus_ones?: number | null }).plus_ones ?? 0}
+              initialPlusOneName={(rsvp as { plus_one_name?: string | null }).plus_one_name ?? null}
+              initialEtransferEmail={(profile as { etransfer_email?: string | null })?.etransfer_email ?? null}
+              labels={tEventDetail.raw("rsvp") as never}
+            />
+          </div>
         )}{isPaid && rsvp.payment_status === "unpaid" && <div className="mt-4 rounded-xl border border-line bg-white p-4">
           <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
           <p className="mt-2 text-sm leading-6 text-muted">{t("paymentInstructions", { amount: `$${eventInfo.price_cad * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} CAD`, email: eventInfo.etransfer_email || t("paymentEmailMissing") })}</p>

@@ -63,6 +63,7 @@ export function EventForm({ labels, eventId, initial, canPublish = false }: Prop
   const [priceCad, setPriceCad] = useState(String(initial?.priceCad ?? 0));
   const [paymentDeadline, setPaymentDeadline] = useState(initial?.paymentDeadline ?? (initial?.priceCad ? defaultDeadline(initial.startsAt) : ""));
   const [deadlineTouched, setDeadlineTouched] = useState(Boolean(initial?.paymentDeadline));
+  const [endsAt, setEndsAt] = useState(initial?.endsAt ?? "");
   const [agendaItems, setAgendaItems] = useState(() => initial?.agenda.map((item) => {
     const [time, ...title] = item.split(" — ");
     return { time: title.length ? time : "", title: title.length ? title.join(" — ") : item };
@@ -76,6 +77,15 @@ export function EventForm({ labels, eventId, initial, canPublish = false }: Prop
     const deadline = new Date(date.getTime() - 24 * 60 * 60 * 1000);
     const local = new Date(deadline.getTime() - deadline.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 16);
+  }
+
+  function handleStartChange(value: string) {
+    if (!deadlineTouched && priceCad !== "0") setPaymentDeadline(defaultDeadline(value));
+    const start = new Date(value);
+    if (Number.isNaN(start.getTime())) return;
+    const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+    const local = new Date(end.getTime() - end.getTimezoneOffset() * 60000);
+    setEndsAt(local.toISOString().slice(0, 16));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -146,8 +156,8 @@ export function EventForm({ labels, eventId, initial, canPublish = false }: Prop
     <form onSubmit={handleSubmit} className="mt-8 space-y-5">
       <label className="block text-sm font-bold">{labels.title}<input name="title" required maxLength={200} defaultValue={initial?.title} className={fieldClass} /></label>
       <label className="block text-sm font-bold">{labels.category}<select name="category" required defaultValue={initial?.category ?? "Workshop"} className={`${fieldClass} bg-white`}><option value="Workshop">{labels.categories.Workshop}</option><option value="Panel">{labels.categories.Panel}</option><option value="Social">{labels.categories.Social}</option><option value="Study Group">{labels.categories["Study Group"]}</option></select></label>
-      <label className="block text-sm font-bold">{labels.date}<input name="startsAt" required type="datetime-local" defaultValue={initial?.startsAt} onChange={(event) => { if (!deadlineTouched && priceCad !== "0") setPaymentDeadline(defaultDeadline(event.target.value)); }} className={fieldClass} /></label>
-      <label className="block text-sm font-bold">{labels.endDate}<input name="endsAt" type="datetime-local" defaultValue={initial?.endsAt} className={fieldClass} /></label>
+      <label className="block text-sm font-bold">{labels.date}<input name="startsAt" required type="datetime-local" defaultValue={initial?.startsAt} onChange={(event) => handleStartChange(event.target.value)} className={fieldClass} /></label>
+      <label className="block text-sm font-bold">{labels.endDate}<input name="endsAt" type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} className={fieldClass} /></label>
       <fieldset><legend className="text-sm font-bold">{labels.locationType}</legend><div className="mt-2 flex flex-wrap gap-5"><label className="flex items-center gap-2"><input type="radio" name="locationType" checked={locationType === "in_person"} onChange={() => setLocationType("in_person")} />{labels.inPerson}</label><label className="flex items-center gap-2"><input type="radio" name="locationType" checked={locationType === "online"} onChange={() => setLocationType("online")} />{labels.online}</label></div></fieldset>
       {locationType === "in_person" ? (
         <LocationInput name="location" label={labels.location} placeholder={labels.locationPlaceholder} mapLabel={labels.viewMap} initialValue={initial?.location} />

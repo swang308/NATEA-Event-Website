@@ -20,13 +20,18 @@ export async function GET(request: Props["request"]) {
     return NextResponse.redirect(new URL(`/${locale}/login?error=oauth_callback`, url.origin));
   }
 
-  // New Google sign-up? Send them to complete their profile.
-  // Returning users (account created more than 10 minutes ago) go home / next.
+  // New user? Send them to complete their profile.
+  // Returning users (profile already has a display name) go home / next.
   if (!next) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const createdAt = user.created_at ? new Date(user.created_at).getTime() : 0;
-      if (Date.now() - createdAt < 10 * 60 * 1000) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!profile?.display_name) {
         return NextResponse.redirect(new URL(`/${locale}/profile`, url.origin));
       }
     }

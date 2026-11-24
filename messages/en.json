@@ -50,7 +50,8 @@
       "title": "How payment works",
       "steps": [
         "Choose an event and RSVP",
-        "Pay by e-Transfer — send $40 to the organizer, then click “I've sent it”",
+        "Pay by e-Transfer — send an e-Transfer to the organizer, then click “I've sent it”",
+        "The host confirms it — you'll get a confirmation email",
         "You're all set"
       ]
     },
@@ -469,7 +470,11 @@
       "guest": "Guest",
       "joinWaitlist": "Join waitlist",
       "leaveWaitlist": "Leave waitlist",
-      "onWaitlist": "You're on the waitlist"
+      "onWaitlist": "You're on the waitlist",
+      "refundEmailTitle": "Refund e-Transfer email",
+      "refundEmailLabel": "Where should the host send your refund?",
+      "refundEmailPlaceholder": "you@example.com",
+      "refundEmailRequired": "Please enter the e-Transfer email for your refund."
     },
     "organizerPayments": {
       "title": "Payment confirmations to review",
@@ -488,7 +493,10 @@
       "copy": "Copy",
       "copied": "Copied",
       "dateSent": "Sent on {date}",
-      "cancelRequested": "Cancellation requested — please confirm and refund:"
+      "cancelRequested": "Cancellation requested — please confirm and refund:",
+      "refundTitle": "Refund requests",
+      "refundEmail": "Refund to",
+      "refund": "Mark as refunded"
     }
   }
 }

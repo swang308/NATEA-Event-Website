@@ -91,7 +91,7 @@ export default async function Home({ params, searchParams }: Props) {
       </section>
 
 
-      <section id="payment" className="py-20"><div className="container"><div className="max-w-2xl"><p className="mb-3 text-sm font-bold uppercase tracking-[.18em] text-purple">{t("payment.eyebrow")}</p><h2 className="display text-4xl font-extrabold">{t("payment.title")}</h2></div><div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-12">{t.raw("payment.steps").map((step: string, i: number) => <div key={step} className="relative"><span className="display text-6xl font-extrabold" style={{ color: "#c9e8ec" }}>0{i + 1}</span>
+      <section id="payment" className="py-20"><div className="container"><div className="max-w-2xl"><p className="mb-3 text-sm font-bold uppercase tracking-[.18em] text-purple">{t("payment.eyebrow")}</p><h2 className="display text-4xl font-extrabold">{t("payment.title")}</h2></div><div className="mt-12 grid gap-10 md:grid-cols-4 md:gap-12">{t.raw("payment.steps").map((step: string, i: number) => <div key={step} className="relative"><span className="display text-6xl font-extrabold" style={{ color: "#c9e8ec" }}>0{i + 1}</span>
         <p className="mt-4 max-w-xs text-lg font-bold leading-snug">{step}</p></div>)}</div></div></section>
       <section id="line" className="bg-bg2 py-20">
         <div className="container grid items-center gap-10 md:grid-cols-2">

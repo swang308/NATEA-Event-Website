@@ -49,8 +49,9 @@
       "eyebrow": "簡單、直接",
       "title": "付款方式",
       "steps": [
-        "選擇活動並 RSVP",
-        "以 e-Transfer 付款 — 寄送 $40 給主辦人，然後點「我已寄出」",
+        "選擇活動並報名",
+        "以 e-Transfer 付款 — 寄送給主辦人，然後點「我已寄出」",
+        "主辦人確認後，你會收到確認信",
         "完成！"
       ]
     },
@@ -469,7 +470,11 @@
       "guest": "同行者",
       "joinWaitlist": "加入候補名單",
       "leaveWaitlist": "退出候補名單",
-      "onWaitlist": "你已在候補名單上"
+      "onWaitlist": "你已在候補名單上",
+      "refundEmailTitle": "退款 e-Transfer Email",
+      "refundEmailLabel": "主辦人要把退款寄到哪個 Email？",
+      "refundEmailPlaceholder": "you@example.com",
+      "refundEmailRequired": "請輸入退款用的 e-Transfer Email。"
     },
     "organizerPayments": {
       "title": "待確認的付款",
@@ -488,7 +493,10 @@
       "copy": "複製",
       "copied": "已複製",
       "dateSent": "於 {date} 送出",
-      "cancelRequested": "有人申請取消報名 — 請確認並退款："
+      "cancelRequested": "有人申請取消報名 — 請確認並退款：",
+      "refundTitle": "退款請求",
+      "refundEmail": "退款至",
+      "refund": "標記為已退款"
     }
   }
 }

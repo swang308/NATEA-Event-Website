@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "NATEA | Meet · Learn · Connect",
   description: "Toronto IT community — Learn together, in Toronto.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

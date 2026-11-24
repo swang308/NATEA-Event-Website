@@ -21,12 +21,11 @@ export async function GET(request: Props["request"]) {
   }
 
   // New Google sign-up? Send them to complete their profile.
-  // Returning users (profile created more than 10 minutes ago) go home / next.
+  // Returning users (account created more than 10 minutes ago) go home / next.
   if (!next) {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data: profile } = await supabase.from("profiles").select("created_at").eq("id", user.id).maybeSingle();
-      const createdAt = profile?.created_at ? new Date(profile.created_at).getTime() : 0;
+      const createdAt = user.created_at ? new Date(user.created_at).getTime() : 0;
       if (Date.now() - createdAt < 10 * 60 * 1000) {
         return NextResponse.redirect(new URL(`/${locale}/profile`, url.origin));
       }

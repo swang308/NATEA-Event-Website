@@ -59,25 +59,20 @@ export function CohostManager({
     setHosts(hosts.filter((h) => h.id !== cohostId));
   }
 
+  const acceptedHosts = hosts.filter((h) => h.status === "accepted");
+  const pendingHosts = hosts.filter((h) => h.status === "pending");
+
   return (
-    <div className="mt-6 rounded-2xl border border-line bg-card p-5">
-      <h2 className="text-lg font-bold">Hosts</h2>
-      <ul className="mt-3 space-y-2">
-        {hosts.map((h) => (
-          <li key={h.id} className="flex items-center justify-between gap-3 text-sm">
-            <span>
-              {h.displayName || h.email}
-              {h.role === "creator" ? " — Creator (collects payments)" : " — Co-host"}
-              {h.status === "pending" ? " (invite pending)" : ""}
-            </span>
-            {isCreator && h.role === "cohost" && (
-              <button type="button" onClick={() => remove(h.id)} className="text-red-600 underline">
-                Remove
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+    <div>
+      <p className="text-sm text-muted">Hosts</p>
+      <p className="mt-1 font-bold text-ink">
+        {acceptedHosts.map((h) => h.displayName || h.email).join(" & ")}
+      </p>
+      {pendingHosts.length > 0 && (
+        <p className="mt-1 text-xs text-muted">
+          Invite pending: {pendingHosts.map((h) => h.email).join(", ")}
+        </p>
+      )}
       {isCreator && (
         <div className="mt-4">
           <label className="text-sm font-bold" htmlFor="cohost-email">Invite a co-host by email</label>
@@ -95,6 +90,18 @@ export function CohostManager({
             </button>
           </div>
           {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
+          {acceptedHosts.filter((h) => h.role === "cohost").length > 0 && (
+            <ul className="mt-3 space-y-1">
+              {acceptedHosts.filter((h) => h.role === "cohost").map((h) => (
+                <li key={h.id} className="flex items-center justify-between gap-3 text-sm">
+                  <span>{h.displayName || h.email}</span>
+                  <button type="button" onClick={() => remove(h.id)} className="text-red-600 underline">
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

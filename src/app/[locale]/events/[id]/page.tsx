@@ -99,7 +99,10 @@ export default async function EventDetailPage({ params }: Props) {
                 </div>
               )}
             </div>
+
             <aside className="rounded-2xl border border-line bg-bg2 p-6">
+              <CohostManager eventId={id} isCreator={isOrganizer} initialHosts={hosts} />
+              <p className="mt-5 text-sm text-muted">{t("price")}</p>
               <p className="text-sm text-muted">{t("price")}</p>
               <p className="display mt-1 text-3xl font-extrabold">{event.price_cad === 0 ? t("free") : `$${event.price_cad} CAD`}</p>
               {event.price_cad > 0 && <p className="mt-1 text-sm text-muted">{t("perPerson")}</p>}
@@ -203,7 +206,6 @@ export default async function EventDetailPage({ params }: Props) {
           </div>
           <div className="grid gap-6 border-t border-line p-8 md:grid-cols-2 lg:grid-cols-4 md:p-12">
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("organizer")}</h2><p className="mt-3 font-bold">{organizer?.display_name || t("organizerFallback")}</p>{event.price_cad > 0 && event.etransfer_email && <div className="mt-3 flex items-start gap-2 text-sm"><span className="min-w-0 break-all leading-5 text-muted">{event.etransfer_email}</span><CopyButton value={event.etransfer_email} label={t("copy")} copiedLabel={t("copied")} /></div>}<p className="mt-3 text-xs leading-5 text-muted">{event.price_cad === 0 ? t("freeOrganizerNote") : t("organizerNote")}</p></section>
-            <CohostManager eventId={id} isCreator={isOrganizer} initialHosts={hosts} />
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("discuss")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("lineButton") === "Open Line" ? "Chat with other attendees in the NATEA Line group." : "在 NATEA Line 群組和其他參加者聊天。"}</p><a href="https://line.me/ti/g/M8agqVHJnT" target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center whitespace-nowrap rounded-full border border-teal bg-white px-5 py-3 text-sm font-bold text-teal-d">{t("lineButton")}</a>
             </section>
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("calendar")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("addToCalendar") === "Add to Google Calendar" ? "Save the date so you don't miss it." : "把活動加入行事曆，不要錯過。"}</p>

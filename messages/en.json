@@ -386,6 +386,7 @@
     "empty": "No events are waiting for approval."
   },
   "EventDetail": {
+    "freeOrganizerNote": "This is a free event — no payment needed.",
     "total": "Total: {amount}",
     "payByCardTitle": "Pay by card",
     "payByCardNote": "Instant — your spot is confirmed right away.",

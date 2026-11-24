@@ -386,6 +386,7 @@
     "empty": "目前沒有等待審核的活動。"
   },
   "EventDetail": {
+    "freeOrganizerNote": "這是免費活動，不需要付款。",
     "total": "總計：{amount}",
     "payByCardTitle": "用信用卡付款",
     "payByCardNote": "即時付款 — 馬上確認你的名額。",

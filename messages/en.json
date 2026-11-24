@@ -150,6 +150,10 @@
       }
     },
     "myEvents": {
+      "payByEtransferTitle": "Pay by e-Transfer",
+"paymentInstructions": "Send {amount} by e-Transfer to {email}. After you send it, click “I've sent it” below.",
+"paymentDeadline": "Payment deadline: {date}",
+"markSent": "I've sent it",
       "title": "My events",
       "description": "Manage the events you host and the events you’re attending.",
       "back": "Back to home",

@@ -115,7 +115,7 @@ export default async function MyEventsPage({ params }: Props) {
       </div>
       <section className="mt-12"><h2 className="display text-2xl font-extrabold">{t("going")}</h2><div className="mt-4 grid gap-4">{(rsvps ?? []).filter((rsvp) => rsvp.payment_status !== "refunded").length ? (rsvps ?? []).filter((rsvp) => rsvp.payment_status !== "refunded").map((rsvp) => {
         const eventInfo = Array.isArray(rsvp.events) ? rsvp.events[0] : rsvp.events; const isPaid = eventInfo?.price_cad > 0; const deadline = eventInfo?.payment_deadline ? new Date(eventInfo.payment_deadline) : null; const overdue = Boolean(deadline && deadline <= now && rsvp.payment_status === "unpaid");
-        return <article key={rsvp.event_id} className="rounded-2xl border border-line bg-card p-5"><Link href={`/events/${rsvp.event_id}`} className="block"><h3 className="font-bold text-purple underline-offset-4 hover:underline">{eventInfo?.title}</h3><p className="mt-1 text-sm text-muted">{eventInfo?.starts_at ? new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(new Date(eventInfo.starts_at)) : ""}{eventInfo?.location ? ` · ${eventInfo.location}` : ""}</p>{isPaid && <p className="mt-1 text-sm font-bold text-ink">${eventInfo.price_cad * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} CAD</p>}</Link><p className="mt-1 text-sm text-muted">{overdue ? t("paymentOverdue") : t(rsvp.payment_status)}</p>{((rsvp as { plus_ones?: number | null }).plus_ones ?? 0) > 0 && rsvp.payment_status !== "cancel_requested" && (
+        return <article key={rsvp.event_id} className="rounded-2xl border border-line bg-card p-5"><Link href={`/events/${rsvp.event_id}`} className="block"><h3 className="font-bold text-purple underline-offset-4 hover:underline">{eventInfo?.title}</h3><p className="mt-1 text-sm text-muted">{eventInfo?.starts_at ? new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(new Date(eventInfo.starts_at)) : ""}{eventInfo?.location ? ` · ${eventInfo.location}` : ""}</p>{isPaid && <p className="mt-1 text-sm font-bold text-ink">${eventInfo.price_cad * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} CAD</p>}</Link><div className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted"><span>{overdue ? t("paymentOverdue") : t(rsvp.payment_status)}</span>{rsvp.payment_status !== "cancel_requested" && (<><span>·</span><RsvpButton eventId={rsvp.event_id} isRsvped={true} paymentStatus={rsvp.payment_status as "free" | "unpaid" | "pending" | "paid" | "refunded" | "cancel_requested" | null} priceCents={(eventInfo?.price_cad ?? 0) * 100} initialPlusOnes={(rsvp as { plus_ones?: number | null }).plus_ones ?? 0} initialPlusOneName={(rsvp as { plus_one_name?: string | null }).plus_one_name ?? null} initialEtransferEmail={(profile as { etransfer_email?: string | null })?.etransfer_email ?? null} showStatus={false} inline labels={tEventDetail.raw("rsvp") as never} /></>)}</div>{((rsvp as { plus_ones?: number | null }).plus_ones ?? 0) > 0 && rsvp.payment_status !== "cancel_requested" && (
           <GuestNameEditor
             eventId={rsvp.event_id}
             initialName={(rsvp as { plus_one_name?: string | null }).plus_one_name ?? null}
@@ -130,20 +130,6 @@ export default async function MyEventsPage({ params }: Props) {
               error: t("error"),
             }}
           />
-        )}{rsvp.payment_status !== "cancel_requested" && (
-          <div className="mt-3">
-            <RsvpButton
-              eventId={rsvp.event_id}
-              isRsvped={true}
-              paymentStatus={rsvp.payment_status as "free" | "unpaid" | "pending" | "paid" | "refunded" | "cancel_requested" | null}
-              priceCents={(eventInfo?.price_cad ?? 0) * 100}
-              initialPlusOnes={(rsvp as { plus_ones?: number | null }).plus_ones ?? 0}
-              initialPlusOneName={(rsvp as { plus_one_name?: string | null }).plus_one_name ?? null}
-              initialEtransferEmail={(profile as { etransfer_email?: string | null })?.etransfer_email ?? null}
-              showStatus={false}
-              labels={tEventDetail.raw("rsvp") as never}
-            />
-          </div>
         )}{isPaid && rsvp.payment_status === "unpaid" && <div className="mt-4 rounded-xl border border-line bg-white p-4">
           <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
           <p className="mt-2 text-sm leading-6 text-muted">{t("paymentInstructions", { amount: `$${eventInfo.price_cad * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} CAD`, email: eventInfo.etransfer_email || t("paymentEmailMissing") })}</p>

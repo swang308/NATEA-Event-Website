@@ -11,9 +11,10 @@ type Props = {
   initialPlusOnes?: number;
   initialPlusOneName?: string | null;
   initialEtransferEmail?: string | null;
-  showStatus?: boolean;
   isFull?: boolean;
   isWaitlisted?: boolean;
+  showStatus?: boolean;
+  inline?: boolean;
   labels: {
     rsvp: string;
     cancel: string;
@@ -41,7 +42,8 @@ type Props = {
     back: string;
   };
 };
-export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, initialEtransferEmail = null, isFull = false, isWaitlisted = false, showStatus = true, labels }: Props) {
+
+export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initialPlusOnes = 0, initialPlusOneName = null, initialEtransferEmail = null, isFull = false, isWaitlisted = false, showStatus = true, inline = false, labels }: Props) {
   const router = useRouter();
   const [rsvped, setRsvped] = useState(isRsvped);
   const [currentPaymentStatus, setCurrentPaymentStatus] = useState(paymentStatus);
@@ -56,9 +58,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
 
   async function toggleRsvp() {
     setError("");
-    // Cancelling
     if (rsvped) {
-      // Paid / pending: first click shows the refund-email form
       if (isPaidRsvp && !showRefundForm) {
         setShowRefundForm(true);
         return;
@@ -94,7 +94,6 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
       }
       return;
     }
-    // RSVPing
     setWorking(true);
     try {
       const response = await fetch(`/api/events/${eventId}/rsvp`, {
@@ -117,7 +116,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
   }
 
   return (
-    <div>
+    <div className={inline ? "inline" : undefined}>
       {!rsvped && priceCents > 0 && (
         <div className="mt-6 space-y-3 rounded-xl border border-line bg-bg2 p-4">
           <label className="flex items-center gap-2 text-sm font-bold">
@@ -167,7 +166,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
           {(labels as any).waitlisted ?? "You're on the waitlist"}
         </p>
       )}
-      {!(!rsvped && isFull) && (showRefundForm ? (
+      {!( !rsvped && isFull ) && (showRefundForm ? (
         <div className="mt-3 space-y-3 rounded-xl border border-line bg-bg2 p-4">
           <p className="text-sm font-bold">{labels.refundEmailTitle}</p>
           <label className="block text-sm text-muted">{labels.refundEmailLabel}</label>
@@ -188,7 +187,7 @@ export function RsvpButton({ eventId, isRsvped, paymentStatus, priceCents, initi
           </div>
         </div>
       ) : (
-        <button onClick={toggleRsvp} disabled={working} className={`inline-flex justify-center rounded-full px-5 py-3.5 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${rsvped ? "mt-3 w-auto border-0 bg-transparent px-0 py-1 text-sm text-muted underline underline-offset-4 hover:text-ink" : "mt-6 w-full bg-teal text-white hover:bg-teal-d"}`}>
+        <button onClick={toggleRsvp} disabled={working} className={`inline-flex justify-center rounded-full px-5 py-3.5 font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${rsvped ? `${inline ? "" : "mt-3 "}w-auto border-0 bg-transparent px-0 py-1 text-sm text-muted underline underline-offset-4 hover:text-ink` : "mt-6 w-full bg-teal text-white hover:bg-teal-d"}`}>
           {working ? labels.working : rsvped ? (isPaidRsvp ? labels.requestCancel : labels.cancel) : labels.rsvp}
         </button>
       ))}

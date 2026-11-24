@@ -103,7 +103,6 @@ export default async function EventDetailPage({ params }: Props) {
             <aside className="rounded-2xl border border-line bg-bg2 p-6">
               <CohostManager eventId={id} isCreator={isOrganizer} initialHosts={hosts} />
               <p className="mt-5 text-sm text-muted">{t("price")}</p>
-              <p className="text-sm text-muted">{t("price")}</p>
               <p className="display mt-1 text-3xl font-extrabold">{event.price_cad === 0 ? t("free") : `$${event.price_cad} CAD`}</p>
               {event.price_cad > 0 && <p className="mt-1 text-sm text-muted">{t("perPerson")}</p>}
               {currentRsvp && event.price_cad > 0 && (

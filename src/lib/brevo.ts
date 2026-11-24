@@ -366,3 +366,51 @@ export async function sendRefundRequestedEmail({
 </div>`;
   await sendBrevoEmail(`Refund requested: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
 }
+
+export async function sendEventApprovalEmail({
+  toEmail,
+  toName,
+  organizerName,
+  eventTitle,
+  eventDate,
+  eventLocation,
+  priceCents,
+  capacity,
+  reviewUrl,
+}: {
+  toEmail: string;
+  toName: string;
+  organizerName: string;
+  eventTitle: string;
+  eventDate: string;
+  eventLocation: string;
+  priceCents: number;
+  capacity: number;
+  reviewUrl: string;
+}) {
+  const price = priceCents === 0 ? "Free" : `$${(priceCents / 100).toFixed(2)} CAD`;
+  const html = `<div style="font-family: 'DM Sans', Arial, Helvetica, sans-serif; max-width: 560px; margin: 0 auto; background: #ffffff; color: #17202b;">
+  <div style="background: linear-gradient(135deg, #2ea6b5 0%, #7b2d8e 100%); padding: 32px 24px; text-align: center;">
+    <div style="display: inline-block; background: rgba(255,255,255,0.2); border-radius: 12px; padding: 8px 14px; color: #ffffff; font-size: 24px; font-weight: bold;">N</div>
+    <div style="color: #ffffff; font-size: 22px; font-weight: bold; letter-spacing: 1px; margin-top: 12px;">NATEA</div>
+    <div style="color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px;">TORONTO IT COMMUNITY</div>
+  </div>
+  <div style="padding: 32px 24px;">
+    <h2 style="font-size: 22px; margin: 0 0 16px; color: #17202b;">New event awaiting approval: ${eventTitle}</h2>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">Hi ${toName}, <strong>${organizerName}</strong> created a new event awaiting your approval.</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;"><strong>${eventTitle}</strong></p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">📅 ${eventDate}</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 8px;">📍 ${eventLocation}</p>
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px;">${price} · Capacity: ${capacity}</p>
+    <p style="margin: 28px 0; text-align: center;">
+      <a href="${reviewUrl}" style="display: inline-block; background: #2ea6b5; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 15px; padding: 14px 32px; border-radius: 999px;">Review event</a>
+    </p>
+  </div>
+  <div style="border-top: 1px solid #eeeeee; padding: 20px 24px; text-align: center;">
+    <p style="font-size: 13px; color: #888888; margin: 0;">Learn together, in Toronto.</p>
+    <p style="font-size: 13px; color: #888888; margin: 8px 0 0;">— The NATEA team</p>
+  </div>
+</div>`;
+
+  await sendBrevoEmail(`New event awaiting approval: ${eventTitle}`, [{ email: toEmail, name: toName }], html);
+}

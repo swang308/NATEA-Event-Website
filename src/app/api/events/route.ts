@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getAdminEmailRecipients, sendBrevoEmail, sendPublishedEventAnnouncement } from "@/lib/brevo";
+import { getAdminEmailRecipients, sendEventApprovalEmail, sendPublishedEventAnnouncement } from "@/lib/brevo";
 
 const categories = new Set(["Workshop", "Panel", "Social", "Study Group"]);
 const statuses = new Set(["draft", "pending", "published"]);
@@ -128,7 +128,17 @@ export async function POST(request: Request) {
 
   if (status === "pending") {
     try {
-      await notifyAdminsOfSubmission(event.id, title);
+      const { data: organizerProfile } = await supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
+      await notifyAdminsOfSubmission({
+        eventId: event.id,
+        title,
+        organizerName: organizerProfile?.display_name ?? user.email ?? "An organizer",
+        startsAt: startDate,
+        location,
+        locationType,
+        priceCad,
+        capacity,
+      });
     } catch (emailError) {
       console.error("Admin notification email failed:", emailError);
     }
@@ -137,6 +147,39 @@ export async function POST(request: Request) {
 
 }
 
-async function notifyAdminsOfSubmission(eventId: string, title: string) {
-  await sendBrevoEmail("New NATEA event awaiting approval", await getAdminEmailRecipients(), `<p>A new NATEA event is awaiting approval: <strong>${title}</strong> (${eventId}).</p>`);
+async function notifyAdminsOfSubmission({
+  eventId,
+  title,
+  organizerName,
+  startsAt,
+  location,
+  locationType,
+  priceCad,
+  capacity,
+}: {
+  eventId: string;
+  title: string;
+  organizerName: string;
+  startsAt: Date;
+  location: string;
+  locationType: "online" | "in_person";
+  priceCad: number;
+  capacity: number;
+}) {
+  const admins = await getAdminEmailRecipients();
+  const eventDate = startsAt.toLocaleString("en-CA", { timeZone: "America/Toronto", dateStyle: "full", timeStyle: "short" });
+  const reviewUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/en/admin/events`;
+  for (const admin of admins) {
+    await sendEventApprovalEmail({
+      toEmail: admin.email,
+      toName: admin.name ?? "there",
+      organizerName,
+      eventTitle: title,
+      eventDate,
+      eventLocation: locationType === "online" ? "Online" : location,
+      priceCents: priceCad * 100,
+      capacity,
+      reviewUrl,
+    });
+  }
 }

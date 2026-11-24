@@ -7,7 +7,6 @@ import { PaymentButton } from "@/components/PaymentButton";
 import { PaymentConfirmationList } from "@/components/PaymentConfirmationList";
 import { CopyButton } from "@/components/CopyButton";
 import { GuestNameEditor } from "@/components/GuestNameEditor";
-import PayByCardButton from "@/components/PayByCardButton";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -129,20 +128,12 @@ export default async function MyEventsPage({ params }: Props) {
               error: t("error"),
             }}
           />
-        )}{isPaid && rsvp.payment_status === "unpaid" && <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl bg-teal/10 p-4">
-            <p className="text-sm font-bold text-ink">{t("payByCardTitle")}</p>
-            <div className="mx-auto mt-3 max-w-xs"><PayByCardButton eventId={rsvp.event_id} totalCents={eventInfo.price_cad * 100 * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} labels={{ payByCard: t("payByCard"), payByCardWorking: t("payByCardWorking"), payByCardError: t("payByCardError") }} /></div>
-            <p className="mt-2 text-center text-xs text-muted">{t("payByCardNote")}</p>
-
-          {/* </div>
-          <div className="rounded-xl border border-line bg-white p-4">
-            <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
-            <p className="mt-2 text-sm leading-6 text-muted">{t("paymentInstructions", { amount: `$${eventInfo.price_cad * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} CAD`, email: eventInfo.etransfer_email || t("paymentEmailMissing") })}</p>
-            {deadline && <p className="mt-2 text-xs font-bold text-muted">{t("paymentDeadline", { date: new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(deadline) })}</p>}
-            {overdue && <p className="mt-2 text-sm font-bold text-red-700">{t("paymentOverdue")}</p>}
-            <div className="mt-3"><PaymentButton eventId={rsvp.event_id} rsvpId={rsvp.id} action="mark-sent" label={t("markSent")} working={t("working")} error={t("paymentError")} success={t("paymentSentConfirmation")} confirmation={t("paymentConfirmation")} /></div> */}
-          </div>
+        )}{isPaid && rsvp.payment_status === "unpaid" && <div className="mt-4 rounded-xl border border-line bg-white p-4">
+          <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
+          <p className="mt-2 text-sm leading-6 text-muted">{t("paymentInstructions", { amount: `$${eventInfo.price_cad * (1 + ((rsvp as { plus_ones?: number | null }).plus_ones ?? 0))} CAD`, email: eventInfo.etransfer_email || t("paymentEmailMissing") })}</p>
+          {deadline && <p className="mt-2 text-xs font-bold text-muted">{t("paymentDeadline", { date: new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", { timeZone: "America/Toronto", dateStyle: "medium", timeStyle: "short" }).format(deadline) })}</p>}
+          {overdue && <p className="mt-2 text-sm font-bold text-red-700">{t("paymentOverdue")}</p>}
+          <div className="mt-3"><PaymentButton eventId={rsvp.event_id} rsvpId={rsvp.id} action="mark-sent" label={t("markSent")} working={t("working")} error={t("paymentError")} success={t("paymentSentConfirmation")} confirmation={t("paymentConfirmation")} /></div>
         </div>}
 
           {isPaid && rsvp.payment_status === "pending" && <p role="status" className="mt-4 rounded-xl bg-green-50 p-4 text-sm font-bold text-green-800">{t("paymentSentConfirmation")}</p>}</article>;

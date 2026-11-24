@@ -49,7 +49,15 @@ export default async function EditEventPage({ params }: Props) {
       <h1 className="display mt-8 text-3xl font-extrabold">{t("notOrganizer")}</h1><p className="mt-4 text-muted">{t("notOrganizerDescription")}</p><Link href="/my-events" className="mt-8 inline-flex rounded-full bg-teal px-6 py-3.5 font-bold text-white">{t("backToMyEvents")}</Link></section></main>;
   }
   const isAdmin = profile?.role === "admin";
-  if (event.organizer_id !== user.id && !isAdmin) {
+  const { data: cohost } = await supabase
+    .from("event_cohosts")
+    .select("id")
+    .eq("event_id", id)
+    .eq("user_id", user.id)
+    .eq("status", "accepted")
+    .maybeSingle();
+  const canEdit = event.organizer_id === user.id || isAdmin || Boolean(cohost);
+  if (!canEdit) {
     return <main className="grid min-h-screen place-items-center bg-bg2 px-5"><section className="w-full max-w-xl rounded-2xl border border-line bg-card p-8 text-center shadow-sm"><Link href="/" className="flex items-center justify-center gap-3">
       <span className="gradient-mix grid h-10 w-10 place-items-center rounded-xl text-lg font-bold text-white">N</span>
       <span className="display text-xl font-extrabold tracking-tight">NATEA</span>

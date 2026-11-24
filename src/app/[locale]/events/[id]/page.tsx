@@ -7,6 +7,9 @@ import { RsvpButton } from "@/components/RsvpButton";
 import { PaymentButton } from "@/components/PaymentButton";
 import { CopyButton } from "@/components/CopyButton";
 import { connection } from "next/server";
+import { CohostManager } from "@/components/CohostManager";
+import { getEventHosts } from "@/lib/cohosts";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 
 export const instant = false;
 
@@ -34,6 +37,10 @@ export default async function EventDetailPage({ params }: Props) {
   const { data: attendees } = await supabase.from("public_event_attendees").select("display_name, avatar_url, avatar_emoji, payment_status, plus_ones, plus_one_name").eq("event_id", id).order("display_name");
   const { data: organizer } = await supabase.from("public_event_organizers").select("display_name, avatar_url").eq("event_id", id).maybeSingle();
   const isOrganizer = Boolean(user && event.organizer_id === user.id);
+  const admin = createAdminClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const hosts = await getEventHosts(admin, id);
+  const isCohost = Boolean(user && hosts.some((h) => h.role === "cohost" && h.userId === user.id));
+  const canEdit = isOrganizer || isCohost;
 
   const date = new Intl.DateTimeFormat(locale === "zh-TW" ? "zh-TW" : "en-CA", {
     timeZone: "America/Toronto",
@@ -112,6 +119,11 @@ export default async function EventDetailPage({ params }: Props) {
               <div className="mt-2 h-2 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-teal" style={{ width: `${Math.min((event.attendee_count / event.capacity) * 100, 100)}%` }} /></div>
               {isOrganizer ? <p className="mt-6 rounded-full bg-chip px-5 py-3.5 text-center font-bold text-muted">{t("youAreOrganizer")}</p> : user ? <RsvpButton eventId={id} isRsvped={Boolean(currentRsvp)} paymentStatus={currentRsvp?.payment_status ?? null} priceCents={event.price_cad * 100} initialPlusOnes={currentRsvp?.plus_ones ?? 0} initialPlusOneName={currentRsvp?.plus_one_name ?? null} isFull={isFull} isWaitlisted={isWaitlisted} initialEtransferEmail={myProfile?.etransfer_email ?? null} labels={t.raw("rsvp") as never} />
                 : <Link href={`/login?redirect=/events/${id}`} className="mt-6 inline-flex w-full justify-center rounded-full bg-teal px-5 py-3.5 font-bold text-white">{t("loginToRsvp")}</Link>}
+              {canEdit && (
+                <Link href={`/${locale}/events/${id}/edit`} className="mt-4 inline-flex w-full justify-center rounded-full border border-teal bg-white px-5 py-3 font-bold text-teal-d">
+                  Edit event
+                </Link>
+              )}
               {!isOrganizer && currentRsvp && event.price_cad > 0 && currentRsvp.payment_status === "unpaid" && <div className="mt-6 space-y-4 border-t border-line pt-5">
                 <div className="rounded-2xl border border-line bg-white p-4">
                   <p className="text-sm font-bold text-ink">{t("payByEtransferTitle")}</p>
@@ -191,6 +203,7 @@ export default async function EventDetailPage({ params }: Props) {
           </div>
           <div className="grid gap-6 border-t border-line p-8 md:grid-cols-2 lg:grid-cols-4 md:p-12">
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("organizer")}</h2><p className="mt-3 font-bold">{organizer?.display_name || t("organizerFallback")}</p>{event.price_cad > 0 && event.etransfer_email && <div className="mt-3 flex items-start gap-2 text-sm"><span className="min-w-0 break-all leading-5 text-muted">{event.etransfer_email}</span><CopyButton value={event.etransfer_email} label={t("copy")} copiedLabel={t("copied")} /></div>}<p className="mt-3 text-xs leading-5 text-muted">{event.price_cad === 0 ? t("freeOrganizerNote") : t("organizerNote")}</p></section>
+            <CohostManager eventId={id} isCreator={isOrganizer} initialHosts={hosts} />
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("discuss")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("lineButton") === "Open Line" ? "Chat with other attendees in the NATEA Line group." : "在 NATEA Line 群組和其他參加者聊天。"}</p><a href="https://line.me/ti/g/M8agqVHJnT" target="_blank" rel="noreferrer" className="mt-4 inline-flex w-full justify-center whitespace-nowrap rounded-full border border-teal bg-white px-5 py-3 text-sm font-bold text-teal-d">{t("lineButton")}</a>
             </section>
             <section className="rounded-2xl border border-line bg-bg2 p-6"><h2 className="display text-xl font-extrabold">{t("calendar")}</h2><p className="mt-3 text-sm leading-6 text-muted">{t("addToCalendar") === "Add to Google Calendar" ? "Save the date so you don't miss it." : "把活動加入行事曆，不要錯過。"}</p>
